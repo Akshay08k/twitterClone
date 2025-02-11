@@ -32,8 +32,6 @@ const getSinglePost = asyncHandler(async (req, res) => {
     const comments = await Comment.find({ post: postId });
     const postCommentsCount = await Comment.countDocuments({ post: postId });
     const userLiked = await PostLikes.exists({ post: postId, user: req.user._id });
-
-
     return res.status(200).json(new ApiResponce(200, {
         post,
         postLikeCount,

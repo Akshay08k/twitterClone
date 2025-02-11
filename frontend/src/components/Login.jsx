@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router";
 
 const Login = () => {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -23,7 +25,9 @@ const Login = () => {
     );
     const isAuthenticated = res.status;
     if (isAuthenticated === 200) {
-      console.log("success", res.data);
+      login();
+      navigate("/home");
+      // console.log("success", res.data);
     }
   };
 
