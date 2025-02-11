@@ -1,12 +1,15 @@
-import { Outlet } from "react-router-dom";
-import Navbar from "./Navbar.jsx"; // Assuming you have a Navbar component
+import { Outlet, useLocation } from "react-router-dom";
+import Navbar from "./Navbar.jsx"; // Ensure Navbar is correctly imported
 
 export default function Root() {
+  const location = useLocation();
+  console.log("Current Route:", location.pathname); // Logs current path
+
   return (
     <div>
       <Navbar />
       <main>
-        <Outlet /> {/* This renders the child routes */}
+        <Outlet />
       </main>
     </div>
   );

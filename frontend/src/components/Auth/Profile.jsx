@@ -12,7 +12,7 @@ import {
   BackArrowIcon,
   MoreIcon,
   VerifiedIcon,
-} from "../components/Icons/Icons.jsx";
+} from "../../components/Icons/Icons.jsx";
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("tweets");
 

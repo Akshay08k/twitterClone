@@ -1,40 +1,45 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router";
 
 const Login = () => {
   const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const sendData = async () => {
-    const res = await axios.post(
-      "http://localhost:3000/user/login",
-      {
-        email: formData.email,
-        password: formData.password,
-      },
-      {
-        withCredentials: true,
+    setLoading(true);
+    setError(""); // Reset error before a new attempt
+
+    try {
+      const res = await axios.post(
+        "http://localhost:3000/user/login",
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+        { withCredentials: true }
+      );
+
+      if (res.status === 200) {
+        login();
+        navigate("/home");
       }
-    );
-    const isAuthenticated = res.status;
-    if (isAuthenticated === 200) {
-      login();
-      navigate("/home");
-      // console.log("success", res.data);
+    } catch (err) {
+      setError("Invalid email or password. Please try again.");
+      console.error("Login error:", err.response?.data || err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     sendData();
-    navigate("/home");
   };
 
   return (
@@ -45,16 +50,18 @@ const Login = () => {
         </h1>
 
         <div className="bg-black p-6 rounded-2xl">
-          <form method="post" className="space-y-5">
+          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+          <form method="post" className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <input
                 className="w-full p-4 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-[#1DA1F2] focus:ring-1 focus:ring-[#1DA1F2] placeholder-gray-600"
                 type="email"
                 name="email"
                 value={formData.email}
-                onChange={(e) => {
-                  setFormData({ ...formData, email: e.target.value });
-                }}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 placeholder="Email"
                 required
               />
@@ -66,20 +73,22 @@ const Login = () => {
                 type="password"
                 name="password"
                 value={formData.password}
-                onChange={(e) => {
-                  setFormData({ ...formData, password: e.target.value });
-                }}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 placeholder="Password"
                 required
               />
             </div>
 
             <button
-              className="w-full p-3 bg-[#1DA1F2] text-white rounded-full font-bold text-lg hover:bg-[#1a91da] transition duration-200"
+              className={`w-full p-3 bg-[#1DA1F2] text-white rounded-full font-bold text-lg hover:bg-[#1a91da] transition duration-200 ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               type="submit"
-              onClick={handleSubmit}
+              disabled={loading}
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 

@@ -1,17 +1,29 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { useAuth } from "./contexts/AuthContext"; // Import the useAuth hook
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
 import Root from "./components/Root.jsx";
-import Login from "./components/Login.jsx";
-import Register from "./components/Register.jsx";
-import App from "./App.jsx";
-import ProfileUpdate from "./components/Profile.jsx";
-import TrendingSection from "./components/Trending/Treding.jsx"; // Fixed spelling
+import Login from "./components/Auth/Login.jsx";
+import Home from "./components/Home.jsx";
+import ProfileUpdate from "./components/Auth/Profile.jsx";
+import TrendingSection from "./components/Trending/Trending.jsx";
 import SinglePost from "./components/SinglePost.jsx";
+import { useEffect } from "react";
+
+// Higher Order Component for Protected Routes
+const ProtectedRoute = ({ element }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? element : <Navigate to="/login" replace />;
+};
 
 export default function RouterComponent() {
   const { isAuthenticated } = useAuth();
 
-  console.log("User Authenticated:", isAuthenticated);
+  useEffect(() => {
+    console.log("isAuthenticated:", isAuthenticated);
+  }, [isAuthenticated]);
 
   const router = createBrowserRouter([
     {
@@ -19,32 +31,44 @@ export default function RouterComponent() {
       element: <Root />,
       children: [
         {
-          index: true, // Default route
-          element: isAuthenticated ? <App /> : <Login />,
+          index: true,
+          element: isAuthenticated ? (
+            <Navigate to="/home" replace />
+          ) : (
+            <Login />
+          ),
         },
         {
           path: "login",
-          element: !isAuthenticated ? <Login /> : <App />,
+          element: isAuthenticated ? (
+            <Navigate to="/home" replace />
+          ) : (
+            <Login />
+          ),
         },
         {
           path: "register",
-          element: !isAuthenticated ? <Register /> : <App />, // Redirect logged-in users
+          element: isAuthenticated ? (
+            <Navigate to="/home" replace />
+          ) : (
+            <Register />
+          ),
         },
         {
           path: "home",
-          element: <App />,
+          element: <ProtectedRoute element={<Home />} />,
         },
         {
           path: "explore",
-          element: <TrendingSection />,
+          element: <ProtectedRoute element={<TrendingSection />} />,
         },
         {
           path: "profile",
-          element: <ProfileUpdate />,
+          element: <ProtectedRoute element={<ProfileUpdate />} />,
         },
         {
           path: "posts/:postId",
-          element: <SinglePost />,
+          element: <ProtectedRoute element={<SinglePost />} />,
         },
       ],
     },

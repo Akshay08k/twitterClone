@@ -1,37 +1,43 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from "react";
 
-// Create a context for authentication state
+// Create authentication context
 const AuthContext = createContext();
 
-// AuthProvider component to provide authentication state to the app
+// AuthProvider component
 export function AuthProvider({ children }) {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-    // Simulate fetching user authentication status from localStorage (or your backend)
-    useEffect(() => {
-        const storedAuthStatus = localStorage.getItem("isAuthenticated");
-        setIsAuthenticated(storedAuthStatus === "true"); // You can use more advanced checks here
-    }, []);
+  useEffect(() => {
+    // Simulate fetching authentication status from storage (or backend)
+    const storedAuthStatus = localStorage.getItem("isAuthenticated");
+    if (storedAuthStatus === "true") {
+      setIsAuthenticated(true);
+    }
+    setLoading(false);
+  }, []);
 
-    const login = () => {
-        setIsAuthenticated(true);
-        localStorage.setItem("isAuthenticated", "true");
-    };
+  const login = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem("isAuthenticated", "true");
+  };
 
-    const logout = () => {
-        setIsAuthenticated(false);
-        localStorage.removeItem("isAuthenticated");
-    };
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem("isAuthenticated");
+  };
 
-    return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, loading }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 }
 
-// Custom hook to use authentication state
+// Custom hook to use authentication
 export function useAuth() {
-    return useContext(AuthContext);
+  return useContext(AuthContext);
 }
+
+export default useAuth;

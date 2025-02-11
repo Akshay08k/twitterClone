@@ -1,12 +1,9 @@
 import React from "react";
-import Navbar from "./components/Navbar";
-import PostFeed from "./components/PostFeed";
-
+import Root from "./components/Root";
 const App = () => {
   return (
     <>
-      <Navbar />
-      <PostFeed />
+      <Root />
     </>
   );
 };
