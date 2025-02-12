@@ -8,6 +8,7 @@ import Root from "./components/Root.jsx";
 import Login from "./components/Auth/Login.jsx";
 import Home from "./components/Home.jsx";
 import ProfileUpdate from "./components/Auth/Profile.jsx";
+import Register from "./components/Auth/Register.jsx";
 import TrendingSection from "./components/Trending/Trending.jsx";
 import SinglePost from "./components/SinglePost.jsx";
 import { useEffect } from "react";
