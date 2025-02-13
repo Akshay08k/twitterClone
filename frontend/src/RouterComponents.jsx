@@ -8,6 +8,7 @@ import Root from "./components/Root.jsx";
 import Login from "./components/Auth/Login.jsx";
 import Home from "./components/Home.jsx";
 import ProfileUpdate from "./components/Auth/Profile.jsx";
+import Logout from "./components/Auth/Logout.jsx";
 import Register from "./components/Auth/Register.jsx";
 import TrendingSection from "./components/Trending/Trending.jsx";
 import SinglePost from "./components/SinglePost.jsx";
@@ -70,6 +71,10 @@ export default function RouterComponent() {
         {
           path: "posts/:postId",
           element: <ProtectedRoute element={<SinglePost />} />,
+        },
+        {
+          path: "logout",
+          element: <ProtectedRoute element={<Logout />} />,
         },
       ],
     },

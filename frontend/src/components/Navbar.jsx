@@ -15,11 +15,7 @@ const Navbar = () => {
 
   //HANDLE LOGOUT IS DONE
   const handleLogout = () => {
-    axios
-      .post("http://localhost:3000/user/logout", {}, { withCredentials: true })
-      .then((res) => console.log(res.data))
-      .then(() => (window.location.href = "/"))
-      .catch((err) => console.log(err));
+    window.location.href = "/logout";
   };
 
   return (
