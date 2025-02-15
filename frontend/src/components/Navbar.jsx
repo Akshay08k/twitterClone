@@ -7,7 +7,7 @@ import {
   NotificationIcon,
 } from "../components/Icons/Icons.jsx";
 import TweetPopup from "./popups/TweetPopup";
-import axios from "axios";
+
 const Navbar = () => {
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);

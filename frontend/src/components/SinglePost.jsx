@@ -28,7 +28,7 @@ const SinglePost = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:3000/posts/${params.postId}`,
+        `http://localhost:3000/posts/post/${params.postId}`,
         { withCredentials: true }
       );
       setPost(response.data.data);
