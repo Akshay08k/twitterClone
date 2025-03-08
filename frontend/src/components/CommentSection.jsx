@@ -9,7 +9,7 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-    
+
     try {
       const response = await axios.post(
         `http://localhost:3000/comment/${postId}/create`,
@@ -17,17 +17,24 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
         { withCredentials: true }
       );
 
-      if (response.data.success && response.data.comment?._id) {
-        setComments((prev) => [response.data.comment, ...prev]); // Update state
-        setNewComment(""); // Clear input field
+      // Log the response to see the structure
+      console.log("Comment response:", response.data);
 
-        console.log("New Comment Added:", response.data.comment); // ✅ Debugging
+      if (response.data.success === true) {
+        // Use the correct property from the response
+        const newCommentData = response.data.data || response.data.comment;
+        console.log("New comment data:", newCommentData);
 
-        if (onCommentUpdate) {
-          console.log("Triggering onCommentUpdate..."); // ✅ Check if it runs
-          onCommentUpdate(response.data.comment);
+        // Make sure the comment has the expected structure
+        if (newCommentData && newCommentData._id) {
+          // Update comments locally - make sure we're maintaining the correct structure
+          setComments((prev) => [newCommentData, ...prev]);
+          setNewComment("");
+
+          // Notify parent component
+          if (onCommentUpdate) onCommentUpdate(newCommentData);
         } else {
-          console.error("onCommentUpdate is undefined!"); // 🚨 Debugging
+          console.error("Invalid comment structure:", newCommentData);
         }
       }
     } catch (error) {

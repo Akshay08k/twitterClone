@@ -9,12 +9,12 @@ const getComments = asyncHandler(async (req, res) => {
 })
 const createComment = asyncHandler(async (req, res) => {
     const { postId } = req.body;
-    const { comment } = req.body;
-    if (!comment) {
+    const { content } = req.body;
+    if (!content) {
         throw new ApiError(400, "All fields are required");
     }
     const commentCreated = await Comment.create({
-        comment,
+        content,
         user: req.user._id,
         post: postId
     })
