@@ -1,35 +1,55 @@
-// src/contexts/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from "react";
+import axios from "axios";
 
-// Create authentication context
 const AuthContext = createContext();
 
-// AuthProvider component
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching authentication status from storage (or backend)
-    const storedAuthStatus = localStorage.getItem("isAuthenticated");
-    if (storedAuthStatus === "true") {
+    // Fetch token from localStorage
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
       setIsAuthenticated(true);
     }
     setLoading(false);
   }, []);
 
-  const login = () => {
-    setIsAuthenticated(true);
-    localStorage.setItem("isAuthenticated", "true");
+  const login = async (email, password) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:3000/user/login",
+        { email, password },
+        { withCredentials: true }
+      );
+
+      if (res.status === 200) {
+        const jwtToken = res.data.token; // Assume backend sends { token: "JWT_TOKEN" }
+
+        // Store the token securely
+        localStorage.setItem("token", jwtToken);
+
+        setToken(jwtToken);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error("Login failed:", error.response?.data || error.message);
+    }
   };
 
   const logout = () => {
+    setToken(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, token, login, logout, loading }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );

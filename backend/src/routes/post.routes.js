@@ -16,7 +16,6 @@ router.route("/create").post(
 )
 
 router.route("/").get(verifyJWT, getPosts)
-
 router.route("/:postId/like").post(verifyJWT, PostLikeHandler)
 router.route("/post/:postId").get(verifyJWT, getSinglePost)
 

@@ -1,10 +1,7 @@
-import { Outlet, useLocation } from "react-router-dom";
-import Navbar from "./Navbar.jsx"; // Ensure Navbar is correctly imported
+import { Outlet } from "react-router-dom";
+// Ensure Navbar is correctly imported
 
 export default function Root() {
-  const location = useLocation();
-  console.log("Current Route:", location.pathname); // Logs current path
-
   return (
     <div>
       <main>

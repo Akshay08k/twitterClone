@@ -1,5 +1,4 @@
-// components/CommentSection.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import CommentThread from "./CommentThread";
 
@@ -10,19 +9,25 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-
+    
     try {
       const response = await axios.post(
-        `http://localhost:3000/posts/${postId}/comments`,
-        { content: newComment },
+        `http://localhost:3000/comment/${postId}/create`,
+        { content: newComment, postId },
         { withCredentials: true }
       );
 
-      if (response.data.success) {
-        setComments((prevComments) => [response.data.comment, ...prevComments]);
-        setNewComment("");
+      if (response.data.success && response.data.comment?._id) {
+        setComments((prev) => [response.data.comment, ...prev]); // Update state
+        setNewComment(""); // Clear input field
+
+        console.log("New Comment Added:", response.data.comment); // ✅ Debugging
+
         if (onCommentUpdate) {
+          console.log("Triggering onCommentUpdate..."); // ✅ Check if it runs
           onCommentUpdate(response.data.comment);
+        } else {
+          console.error("onCommentUpdate is undefined!"); // 🚨 Debugging
         }
       }
     } catch (error) {
@@ -32,15 +37,11 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
 
   const handleReplySubmit = (newReply, parentCommentId) => {
     setComments((prevComments) =>
-      prevComments.map((comment) => {
-        if (comment._id === parentCommentId) {
-          return {
-            ...comment,
-            replies: [...(comment.replies || []), newReply],
-          };
-        }
-        return comment;
-      })
+      prevComments.map((comment) =>
+        comment._id === parentCommentId
+          ? { ...comment, replies: [...(comment.replies || []), newReply] }
+          : comment
+      )
     );
   };
 
@@ -65,9 +66,6 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
               rows="3"
             />
             <div className="flex justify-between items-center">
-              <div className="flex space-x-2 text-[#1DA1F2]">
-                {/* Add media icons here if needed */}
-              </div>
               <button
                 type="submit"
                 disabled={!newComment.trim()}
@@ -86,16 +84,18 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
       </form>
 
       <div className="space-y-1">
-        {comments.map((comment) => (
-          <CommentThread
-            key={comment._id}
-            comment={comment}
-            postId={postId}
-            onReplySubmit={(newReply) =>
-              handleReplySubmit(newReply, comment._id)
-            }
-          />
-        ))}
+        {comments.map((comment) =>
+          comment?._id ? (
+            <CommentThread
+              key={comment._id}
+              comment={comment}
+              postId={postId}
+              onReplySubmit={(newReply) =>
+                handleReplySubmit(newReply, comment._id)
+              }
+            />
+          ) : null
+        )}
       </div>
     </div>
   );

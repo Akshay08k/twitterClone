@@ -16,17 +16,8 @@ const Login = () => {
     setError(""); // Reset error before a new attempt
 
     try {
-      const res = await axios.post(
-        "http://localhost:3000/user/login",
-        {
-          email: formData.email,
-          password: formData.password,
-        },
-        { withCredentials: true }
-      );
-
       if (res.status === 200) {
-        login();
+        login(formData.email, formData.password);
         navigate("/home");
       }
     } catch (err) {

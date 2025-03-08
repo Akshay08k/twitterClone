@@ -8,7 +8,6 @@ import mongoose from "mongoose";
 
 const createPost = asyncHandler(async (req, res) => {
     const { description } = req.body;
-
     if (!description) {
         throw new ApiError(400, "All fields are required");
     }
@@ -24,25 +23,34 @@ const createPost = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponce(200, post, "Post Created Successfully"));
 })
 
-const getSinglePost = asyncHandler(async (req, res) => {
 
-    const { postId } = req.params;
-    const post = await Post.findById(postId).populate("user").populate("attachements");
-    const postLikeCount = await PostLikes.countDocuments({ post: postId });
+const getSinglePost = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const postId = req.params.postId;
+
+    const post = await Post.findById(postId)
+        .populate("user")
+        .populate("attachements");
+
+    if (!post) {
+        return res.status(404).json(new ApiResponce(404, null, "Post Not Found"));
+    }
+
+    const postLikesCount = await PostLikes.countDocuments({ post: postId });
     const comments = await Comment.find({ post: postId });
     const postCommentsCount = await Comment.countDocuments({ post: postId });
-    const userLiked = await PostLikes.exists({ post: postId, user: req.user._id });
-    return res.status(200).json(new ApiResponce(200, {
-        post,
-        postLikeCount,
-        comments,
-        postCommentsCount,
-        userLiked
-    }, "Post Fetched Successfully"));
-})
+    const userLiked = await PostLikes.exists({ post: postId, user: userId });
 
+    const postWithDetails = {
+        ...post.toObject(),
+        comments: comments,
+        commentsCount: postCommentsCount,
+        likesCount: postLikesCount,
+        userLiked: !!userLiked
+    };
 
-
+    return res.status(200).json(new ApiResponce(200, postWithDetails, "Post Fetched Successfully"));
+});
 
 const PostLikeHandler = asyncHandler(async (req, res) => {
     const { postId } = req.params;
@@ -93,7 +101,6 @@ const getPosts = asyncHandler(async (req, res) => {
 
         };
     }));
-
     return res.status(200).json(new ApiResponce(200, postsWithLikesInfo, "Posts Fetched Successfully"));
 });
 

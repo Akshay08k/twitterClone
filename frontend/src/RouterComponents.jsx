@@ -12,7 +12,6 @@ import Logout from "./components/Auth/Logout.jsx";
 import Register from "./components/Auth/Register.jsx";
 import TrendingSection from "./components/Trending/Trending.jsx";
 import SinglePost from "./components/SinglePost.jsx";
-import { useEffect } from "react";
 
 // Higher Order Component for Protected Routes
 const ProtectedRoute = ({ element }) => {
@@ -22,10 +21,6 @@ const ProtectedRoute = ({ element }) => {
 
 export default function RouterComponent() {
   const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    console.log("isAuthenticated:", isAuthenticated);
-  }, [isAuthenticated]);
 
   const router = createBrowserRouter([
     {
