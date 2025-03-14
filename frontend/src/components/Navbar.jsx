@@ -6,7 +6,7 @@ import {
   ExploreIcon,
   NotificationIcon,
 } from "../components/Icons/Icons.jsx";
-import TweetPopup from "./popups/TweetPopup";
+import TweetPopup from "./Popups/TweetPopup.jsx";
 
 const Navbar = () => {
   const location = useLocation();

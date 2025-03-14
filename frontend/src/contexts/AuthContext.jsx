@@ -6,17 +6,39 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
 
   useEffect(() => {
-    // Fetch token from localStorage
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-      setIsAuthenticated(true);
-    }
-    setLoading(false);
-  }, []);
+    const validateToken = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await axios.post(
+          "http://localhost:3000/user/validateToken",
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
+        );
+
+        if (res.data.valid) {
+          setIsAuthenticated(true);
+        } else {
+          logout(); // Only logout if backend confirms token is invalid
+        }
+      } catch (error) {
+        console.error("Token validation error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    validateToken();
+  }, [token]);
 
   const login = async (email, password) => {
     try {
@@ -27,11 +49,9 @@ export function AuthProvider({ children }) {
       );
 
       if (res.status === 200) {
-        const jwtToken = res.data.token; // Assume backend sends { token: "JWT_TOKEN" }
+        const jwtToken = res.data.data.accessToken;
 
-        // Store the token securely
         localStorage.setItem("token", jwtToken);
-
         setToken(jwtToken);
         setIsAuthenticated(true);
       }
@@ -41,9 +61,9 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
     setToken(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("token");
   };
 
   return (
@@ -55,7 +75,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// Custom hook to use authentication
 export function useAuth() {
   return useContext(AuthContext);
 }

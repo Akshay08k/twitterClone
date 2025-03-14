@@ -24,3 +24,8 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     next();
 
 })
+
+export const validateToken = asyncHandler(async (req, res) => {
+    res.json({ valid: true, user: req.user });
+
+})      

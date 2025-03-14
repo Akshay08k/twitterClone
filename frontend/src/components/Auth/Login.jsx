@@ -13,13 +13,11 @@ const Login = () => {
 
   const sendData = async () => {
     setLoading(true);
-    setError(""); // Reset error before a new attempt
-
+    setError(""); 
     try {
-      if (res.status === 200) {
         login(formData.email, formData.password);
         navigate("/home");
-      }
+      
     } catch (err) {
       setError("Invalid email or password. Please try again.");
       console.error("Login error:", err.response?.data || err.message);

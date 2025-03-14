@@ -10,7 +10,7 @@ import {
     updateUserDetails
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT, validateToken } from "../middlewares/auth.middleware.js";
 
 
 const router = Router();
@@ -30,6 +30,7 @@ router.route("/login").post(loginUser);
 
 //secured routes
 router.route("/refresh-token").post(refreshAccessToken)
+router.route("/validateToken").post(validateToken);
 router.route("/avatar").post(verifyJWT, upload.single("avatar"), updateUserAvatar);
 router.route("/change-password").post(verifyJWT, updatePassword);
 router.route("/me").get(verifyJWT, getCurrentUser);
