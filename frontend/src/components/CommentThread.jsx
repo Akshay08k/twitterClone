@@ -1,8 +1,7 @@
-// components/CommentThread.jsx
 import React, { useState } from "react";
 import axios from "axios";
 
-const CommentThread = ({ comment, postId, onReplySubmit }) => {
+const CommentThread = ({ comment, postId, onReplySubmit, onDelete }) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showReplies, setShowReplies] = useState(false);
@@ -36,6 +35,21 @@ const CommentThread = ({ comment, postId, onReplySubmit }) => {
       }
     } catch (error) {
       console.error("Error posting reply:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3000/comment/${postId}/${comment._id}`,
+        { withCredentials: true }
+      );
+
+      if (response.data.success && onDelete) {
+        onDelete(comment._id);
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
     }
   };
 
@@ -101,9 +115,15 @@ const CommentThread = ({ comment, postId, onReplySubmit }) => {
                     }`}
               </button>
             )}
+
+            <button
+              onClick={handleDelete}
+              className="text-red-500 hover:text-red-600 text-sm"
+            >
+              Delete
+            </button>
           </div>
 
-          {/* Reply Input */}
           {showReplyInput && (
             <form onSubmit={handleReplySubmit} className="mt-3">
               <div className="flex space-x-3">
@@ -121,18 +141,14 @@ const CommentThread = ({ comment, postId, onReplySubmit }) => {
                     rows="2"
                   />
                   <div className="flex justify-between items-center mt-2">
-                    <div className="flex space-x-2 text-[#1d9bf0]">
-                      {/* Add media upload icons here if needed */}
-                    </div>
                     <button
                       type="submit"
                       disabled={!replyText.trim()}
-                      className={`px-3 py-1 rounded-full font-bold text-sm
-                        ${
-                          replyText.trim()
-                            ? "bg-[#1d9bf0] text-white hover:bg-[#1a91da]"
-                            : "bg-[#1d9bf0]/50 text-white/50 cursor-not-allowed"
-                        }`}
+                      className={`px-3 py-1 rounded-full font-bold text-sm ${
+                        replyText.trim()
+                          ? "bg-[#1d9bf0] text-white hover:bg-[#1a91da]"
+                          : "bg-[#1d9bf0]/50 text-white/50 cursor-not-allowed"
+                      }`}
                     >
                       Reply
                     </button>
@@ -142,7 +158,6 @@ const CommentThread = ({ comment, postId, onReplySubmit }) => {
             </form>
           )}
 
-          {/* Nested Replies */}
           {showReplies && comment.replies?.length > 0 && (
             <div className="mt-2 space-y-1 pl-2">
               {comment.replies.map((reply) => (
@@ -151,6 +166,7 @@ const CommentThread = ({ comment, postId, onReplySubmit }) => {
                   comment={reply}
                   postId={postId}
                   onReplySubmit={onReplySubmit}
+                  onDelete={onDelete}
                 />
               ))}
             </div>

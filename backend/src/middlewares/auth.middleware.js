@@ -26,6 +26,9 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
 })
 
 export const validateToken = asyncHandler(async (req, res) => {
-    res.json({ valid: true, user: req.user });
-
-})      
+    if (req.user) {
+        res.json({ valid: false, user: req.user })
+    } else {
+        res.json({ valid: true, user: req.user })
+    }
+})

@@ -6,7 +6,6 @@ import PostActions from "./post/PostActions";
 import CommentSection from "./CommentSection";
 
 const Post = ({ post }) => {
-  // Removed ref if not needed
   const [isLiked, setIsLiked] = useState(post.userLiked);
   const [showComments, setShowComments] = useState(false);
   const [isRetweeted, setIsRetweeted] = useState(post.isRetweeted);
@@ -31,18 +30,22 @@ const Post = ({ post }) => {
     }
   };
 
-  const handleCommentUpdate = (newComment) => {
-    // Add the new comment to the comments array
-    setComments((prevComments) => [newComment, ...prevComments]);
-
-    // Increment the comments count
-    setCommentsCount((prev) => prev + 1);
-
-    // For debugging
-    console.log("Comment added:", newComment);
-    console.log("New comment count:", commentsCount + 1);
+  const handleCommentUpdate = (newComment, deletedCommentId = null) => {
+    if (deletedCommentId) {
+      setComments((prev) =>
+        prev.filter((comments) => comments._id !== deletedCommentId)
+      );
+      setCommentsCount((prev) => Math.max(prev - 1, 0));
+    } else if (newComment) {
+      setComments((prev) => [newComment, ...prev]);
+      setCommentsCount((prev) => prev + 1);
+    }
   };
 
+  const handleCommentDelete = (commentId) => {
+    setComments((prev) => prev.filter((comment) => comment._id !== commentId));
+    setCommentsCount((prev) => Math.max(prev - 1, 0));
+  };
   return (
     <div className="border-gray-800">
       <article className="px-4 pt-3 pb-2 hover:bg-gray-900/50 transition-colors duration-200 cursor-pointer">
@@ -75,6 +78,7 @@ const Post = ({ post }) => {
           postId={post._id}
           initialComments={comments}
           onCommentUpdate={handleCommentUpdate}
+          onDelete={handleCommentDelete}
         />
       )}
     </div>

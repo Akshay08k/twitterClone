@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import CommentThread from "./CommentThread";
 
+// Use the correct property from the response
 const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState(initialComments);
@@ -17,21 +18,16 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
         { withCredentials: true }
       );
 
-      // Log the response to see the structure
       console.log("Comment response:", response.data);
 
       if (response.data.success === true) {
-        // Use the correct property from the response
         const newCommentData = response.data.data || response.data.comment;
-        console.log("New comment data:", newCommentData);
 
         // Make sure the comment has the expected structure
         if (newCommentData && newCommentData._id) {
-          // Update comments locally - make sure we're maintaining the correct structure
           setComments((prev) => [newCommentData, ...prev]);
           setNewComment("");
 
-          // Notify parent component
           if (onCommentUpdate) onCommentUpdate(newCommentData);
         } else {
           console.error("Invalid comment structure:", newCommentData);
@@ -41,7 +37,13 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
       console.error("Error posting comment:", error);
     }
   };
+  const handleDelete = (commentId) => {
+    setComments((prevComments) =>
+      prevComments.filter((comment) => comment._id !== commentId)
+    );
 
+    if (onCommentUpdate) onCommentUpdate(null, commentId);
+  };
   const handleReplySubmit = (newReply, parentCommentId) => {
     setComments((prevComments) =>
       prevComments.map((comment) =>
@@ -97,6 +99,7 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
               key={comment._id}
               comment={comment}
               postId={postId}
+              onDelete={handleDelete}
               onReplySubmit={(newReply) =>
                 handleReplySubmit(newReply, comment._id)
               }

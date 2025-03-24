@@ -8,21 +8,6 @@ const PostFeed = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
 
-  const handleCommentUpdate = (postId, newComment) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => {
-        if (post._id === postId) {
-          return {
-            ...post,
-            comments: [newComment, ...(post.comments || [])],
-            commentsCount: (post.commentsCount || 0) + 1,
-          };
-        }
-        return post;
-      })
-    );
-  };
-
   useEffect(() => {
     fetchPosts();
   }, [page]);
@@ -36,6 +21,7 @@ const PostFeed = () => {
       if (response.data.success) {
         const newPosts = response.data.data;
         setPosts(newPosts);
+        
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -52,7 +38,9 @@ const PostFeed = () => {
     <div className="max-w-2xl mx-auto bg-black pt-20 border-l border-r border-gray-800">
       {posts.map((post) => (
         <Post key={post._id} post={post} />
+        
       ))}
+      {console.log(posts)}
 
       {loading && (
         <div className="flex justify-center p-4">

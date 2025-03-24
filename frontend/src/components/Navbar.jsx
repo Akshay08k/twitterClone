@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   HomeIcon,
@@ -7,13 +7,34 @@ import {
   NotificationIcon,
 } from "../components/Icons/Icons.jsx";
 import TweetPopup from "./Popups/TweetPopup.jsx";
+import axios from "axios";
 
 const Navbar = () => {
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isTweetPopupOpen, setIsTweetPopupOpen] = useState(false);
+  const [userImage, setUserImage] = useState(
+    "default-avatar.png"
+  );
 
-  //HANDLE LOGOUT IS DONE
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/user/me", {
+          withCredentials: true, // Make sure cookies are included if needed
+        });
+        if (response.data && response.data.data.avatar) {
+          setUserImage(response.data.data.avatar); // Set the avatar URL from the response
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Handle logout
   const handleLogout = () => {
     window.location.href = "/logout";
   };
@@ -76,7 +97,7 @@ const Navbar = () => {
                 >
                   <img
                     className="h-8 w-8 rounded-full"
-                    src="default-avatar.png"
+                    src={userImage} // Dynamically set user avatar here
                     alt="Profile"
                   />
                 </button>

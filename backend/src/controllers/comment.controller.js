@@ -6,7 +6,9 @@ const getComments = asyncHandler(async (req, res) => {
 
     const comments = await Comment.find({ post: postId })
     return res.status(200).json(new ApiResponce(200, comments, "Comments Fetched Successfully"));
-})
+});
+
+
 const createComment = asyncHandler(async (req, res) => {
     const { postId } = req.body;
     const { content } = req.body;
@@ -19,6 +21,17 @@ const createComment = asyncHandler(async (req, res) => {
         post: postId
     })
     return res.status(200).json(new ApiResponce(200, commentCreated, "Comment Created Successfully"));
-})
+});
 
-export { createComment, getComments }
+
+const deleteComment = asyncHandler(async (req, res) => {
+    const { commentId } = req.params;
+    if (!commentId) {
+        throw new ApiError(400, "Comment Not Found");
+    }
+
+    const commentDeleted = await Comment.findByIdAndDelete(commentId);
+    return res.status(200).json(new ApiResponce(200, commentDeleted, "Comment Deleted Successfully"));
+});
+
+export { createComment, getComments, deleteComment }
