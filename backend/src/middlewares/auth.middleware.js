@@ -1,34 +1,35 @@
-import { User } from "../models/user.model.js";
-import { ApiError } from "../utils/ApiError.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import User from "../Models/user.model.js";
+import { ApiError, asyncHandler } from "../utils/index.js";
 import jwt from "jsonwebtoken";
 
+const verifyJWT = asyncHandler(async (req, res, next) => {
+  const token =
+    req.cookies.accessToken ||
+    req.header("Authorization")?.replace("Bearer ", "");
 
-export const verifyJWT = asyncHandler(async (req, res, next) => {
+  if (!token) throw new ApiError(401, "Access token missing");
 
-    const token = req.cookies.accessToken || req.header("Authorization")?.replace("Bearer", "")
-    if (!token) {
-        throw new ApiError(401, "Unauthorized request Tokens Not Found");
-    }
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const user = await User.findById(decoded.userId).select(
+      "-passwordHash -refreshToken"
+    );
 
-    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-    const user = await User.findById(decodedToken._id).select("-password -refreshToken");
-
-    if (!user) {
-        throw new ApiError(401, "Unauthorized request");
-    }
+    if (!user) throw new ApiError(401, "User not found");
 
     req.user = user;
-
     next();
-
-})
-
-export const validateToken = asyncHandler(async (req, res) => {
-    if (req.user) {
-        res.json({ valid: false, user: req.user })
-    } else {
-        res.json({ valid: true, user: req.user })
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      throw new ApiError(401, "Access token expired");
     }
-})
+    throw new ApiError(401, "Invalid token");
+  }
+});
+
+const validateToken = asyncHandler(async (req, res, next) => {
+  if (req.user) next();
+  else throw new ApiError(401, "User not authenticated");
+});
+
+export { verifyJWT, validateToken };
