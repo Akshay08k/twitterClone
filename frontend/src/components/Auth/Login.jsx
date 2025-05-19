@@ -1,34 +1,28 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "../../contexts/axios";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate } from "react-router";
+
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate();
+  const { setUser, fetchUser } = useAuth();
 
-  const sendData = async () => {
-    setLoading(true);
-    setError(""); 
-    try {
-        login(formData.email, formData.password);
-        navigate("/home");
-      
-    } catch (err) {
-      setError("Invalid email or password. Please try again.");
-      console.error("Login error:", err.response?.data || err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    sendData();
+    try {
+      const res = await axios.post("/user/login", formData);
+      await fetchUser();
+      setUser(res.data.user);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setError("Invalid credentials or server error");
+    }
   };
 
   return (
@@ -55,7 +49,7 @@ const Login = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-4">
             <input
               className="w-full p-4 bg-transparent border border-gray-700 rounded-md text-white focus:outline-none focus:border-[#1DA1F2] focus:ring-1 focus:ring-[#1DA1F2] placeholder-gray-600 text-lg"

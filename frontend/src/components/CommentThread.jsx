@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const CommentThread = ({ comment, postId, onReplySubmit, onDelete }) => {
+const CommentThread = ({
+  comment,
+  postId,
+  onReplySubmit,
+  onDelete,
+  depth = 0,
+}) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showReplies, setShowReplies] = useState(false);
@@ -20,18 +26,27 @@ const CommentThread = ({ comment, postId, onReplySubmit, onDelete }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/posts/${postId}/comments/${comment._id}/reply`,
-        { content: replyText },
+        `http://localhost:3000/comment/create`,
+        {
+          content: replyText,
+          postId: postId,
+          parentCommentId: comment._id,
+        },
         { withCredentials: true }
       );
 
       if (response.data.success) {
+        const newReply = response.data.data;
+
+        // Call the parent component's reply submit handler
+        if (onReplySubmit) {
+          onReplySubmit(newReply, comment._id);
+        }
+
+        // Reset reply input and show replies
         setReplyText("");
         setShowReplyInput(false);
         setShowReplies(true);
-        if (onReplySubmit) {
-          onReplySubmit(response.data.comment);
-        }
       }
     } catch (error) {
       console.error("Error posting reply:", error);
@@ -54,12 +69,8 @@ const CommentThread = ({ comment, postId, onReplySubmit, onDelete }) => {
   };
 
   return (
-    <div className="relative">
-      <div className="flex space-x-3 p-3 hover:bg-gray-900/40 rounded-lg transition-colors">
-        {comment.replies?.length > 0 && (
-          <div className="absolute left-7 top-12 bottom-0 w-0.5 bg-gray-800" />
-        )}
-
+    <div className={`comment-container ${depth > 0 ? "pl-8" : ""}`}>
+      <div className="flex items-center space-x-2">
         <img
           src={comment.user?.avatar || "/default-avatar.png"}
           alt={comment.user?.username}
@@ -159,7 +170,7 @@ const CommentThread = ({ comment, postId, onReplySubmit, onDelete }) => {
           )}
 
           {showReplies && comment.replies?.length > 0 && (
-            <div className="mt-2 space-y-1 pl-2">
+            <div className="mt-2 space-y-1">
               {comment.replies.map((reply) => (
                 <CommentThread
                   key={reply._id}
@@ -167,6 +178,7 @@ const CommentThread = ({ comment, postId, onReplySubmit, onDelete }) => {
                   postId={postId}
                   onReplySubmit={onReplySubmit}
                   onDelete={onDelete}
+                  depth={depth + 1}
                 />
               ))}
             </div>

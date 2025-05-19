@@ -1,12 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import CommentThread from "./CommentThread";
 
-// Use the correct property from the response
-const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
+const CommentSection = ({ postId }) => {
+  const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState(initialComments);
+  const [error, setError] = useState(null);
 
+  // Fetch comments for the post
+  const fetchComments = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/comment/${postId}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      // Filter to show only top-level comments (no parent)
+      const topLevelComments = response.data.data.filter(
+        (comment) => !comment.parentComment
+      );
+
+      setComments(topLevelComments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      setError("Failed to fetch comments");
+    }
+  };
+
+  // Initial fetch of comments
+  useEffect(() => {
+    fetchComments();
+  }, [postId]);
+
+  // Create a new top-level comment
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -14,51 +42,58 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
     try {
       const response = await axios.post(
         `http://localhost:3000/comment/${postId}/create`,
-        { content: newComment, postId },
+        {
+          content: newComment,
+          postId: postId,
+        },
         { withCredentials: true }
       );
 
-      console.log("Comment response:", response.data);
+      if (response.data.success) {
+        const newCommentData = response.data.data;
 
-      if (response.data.success === true) {
-        const newCommentData = response.data.data || response.data.comment;
-
-        // Make sure the comment has the expected structure
-        if (newCommentData && newCommentData._id) {
-          setComments((prev) => [newCommentData, ...prev]);
-          setNewComment("");
-
-          if (onCommentUpdate) onCommentUpdate(newCommentData);
-        } else {
-          console.error("Invalid comment structure:", newCommentData);
-        }
+        // Add new comment to the top of the comments list
+        setComments((prevComments) => [newCommentData, ...prevComments]);
+        setNewComment("");
       }
     } catch (error) {
       console.error("Error posting comment:", error);
+      setError("Failed to post comment");
     }
   };
+
+  // Handle reply submission
+  const handleReplySubmit = (newReply, parentCommentId) => {
+    setComments((prevComments) =>
+      prevComments.map((comment) => {
+        if (comment._id === parentCommentId) {
+          return {
+            ...comment,
+            replies: [...(comment.replies || []), newReply],
+          };
+        }
+        return comment;
+      })
+    );
+  };
+
+  // Handle comment deletion
   const handleDelete = (commentId) => {
     setComments((prevComments) =>
       prevComments.filter((comment) => comment._id !== commentId)
     );
+  };
 
-    if (onCommentUpdate) onCommentUpdate(null, commentId);
-  };
-  const handleReplySubmit = (newReply, parentCommentId) => {
-    setComments((prevComments) =>
-      prevComments.map((comment) =>
-        comment._id === parentCommentId
-          ? { ...comment, replies: [...(comment.replies || []), newReply] }
-          : comment
-      )
-    );
-  };
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   return (
-    <div className="px-4 pb-4">
+    <div className="comment-section bg-black text-white p-4">
+      {/* Comment Input */}
       <form
         onSubmit={handleCommentSubmit}
-        className="mb-4 border-b border-gray-800 pb-4"
+        className="mb-6 border-b border-gray-800 pb-4"
       >
         <div className="flex space-x-3">
           <img
@@ -70,41 +105,43 @@ const CommentSection = ({ postId, initialComments = [], onCommentUpdate }) => {
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Post your reply"
+              placeholder="What's happening?"
               className="w-full bg-transparent text-white text-lg resize-none focus:outline-none min-h-[80px]"
               rows="3"
             />
-            <div className="flex justify-between items-center">
+            <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={!newComment.trim()}
-                className={`px-4 py-1.5 rounded-full font-bold text-sm
-                  ${
-                    newComment.trim()
-                      ? "bg-[#1DA1F2] text-white hover:bg-[#1a91da]"
-                      : "bg-[#1DA1F2]/50 text-white/50 cursor-not-allowed"
-                  }`}
+                className={`px-4 py-2 rounded-full font-bold text-sm ${
+                  newComment.trim()
+                    ? "bg-[#1d9bf0] text-white hover:bg-[#1a91da]"
+                    : "bg-[#1d9bf0]/50 text-white/50 cursor-not-allowed"
+                }`}
               >
-                Reply
+                Comment
               </button>
             </div>
           </div>
         </div>
       </form>
 
-      <div className="space-y-1">
-        {comments.map((comment) =>
-          comment?._id ? (
+      {/* Comments List */}
+      <div className="space-y-4">
+        {comments.length === 0 ? (
+          <div className="text-gray-500 text-center">
+            No comments yet. Be the first to comment!
+          </div>
+        ) : (
+          comments.map((comment) => (
             <CommentThread
               key={comment._id}
               comment={comment}
               postId={postId}
+              onReplySubmit={handleReplySubmit}
               onDelete={handleDelete}
-              onReplySubmit={(newReply) =>
-                handleReplySubmit(newReply, comment._id)
-              }
             />
-          ) : null
+          ))
         )}
       </div>
     </div>

@@ -2,10 +2,7 @@
 import { createRoot } from "react-dom/client";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import "./index.css";
-import RouterComponent from "./RouterComponents.jsx"; // Your routing component
+import RouterComponent from "./Layout.jsx";
+import App from "./App.jsx";
 
-createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-    <RouterComponent />
-  </AuthProvider>
-);
+createRoot(document.getElementById("root")).render(<App />);

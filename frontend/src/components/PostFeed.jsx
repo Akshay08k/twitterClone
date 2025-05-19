@@ -1,4 +1,3 @@
-// components/PostFeed.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Post from "./Posts";
@@ -21,7 +20,6 @@ const PostFeed = () => {
       if (response.data.success) {
         const newPosts = response.data.data;
         setPosts(newPosts);
-        
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -38,9 +36,7 @@ const PostFeed = () => {
     <div className="max-w-2xl mx-auto bg-black pt-20 border-l border-r border-gray-800">
       {posts.map((post) => (
         <Post key={post._id} post={post} />
-        
       ))}
-      {console.log(posts)}
 
       {loading && (
         <div className="flex justify-center p-4">

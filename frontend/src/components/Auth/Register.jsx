@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { redirect } from "react-router";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -40,8 +41,15 @@ const Register = () => {
       data.append("avatar", avatar);
     }
 
-    const res = await axios.post("http://localhost:3000/user/register", data);
-    console.log(res);
+    try {
+      const res = await axios.post("http://localhost:3000/user/register", data);
+
+      if (res.status === 200) {
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
