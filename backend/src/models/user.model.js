@@ -29,7 +29,10 @@ const UserSchema = new Schema(
       type: Date,
       required: false,
     },
-
+    website: {
+      type: String,
+      required: false,
+    },
     location: {
       type: String,
       required: false,
@@ -38,9 +41,17 @@ const UserSchema = new Schema(
       type: String,
       required: false,
     },
+    bannerImage: {
+      type: String,
+      required: false,
+      default:
+        "http://res.cloudinary.com/dbwt5yere/image/upload/v1739381440/f7k5uhjq6nxdimn1tq5s.png",
+    },
     avatar: {
       type: String,
       required: true,
+      default:
+        "http://res.cloudinary.com/dbwt5yere/image/upload/v1741439441/k4xfc9enxphhc8q5qyhf.jpg",
     },
     refreshToken: {
       type: String,

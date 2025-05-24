@@ -6,7 +6,7 @@ import {
   uploadOnCloudinary,
   asyncHandler,
 } from "../utils/index.js";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const token = req.cookies.refreshToken;
@@ -40,7 +40,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 // ME
 const me = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select(
-    "-passwordHash -refreshToken"
+    "-passwordHash -refreshToken -is_admin -password"
   );
   res.status(200).json(user);
 });
@@ -63,7 +63,6 @@ const registerUser = asyncHandler(async (req, res) => {
   let existedUser = await User.findOne({ $or: [{ username, email }] });
   if (existedUser) {
     throw new ApiError(401, "User already exists");
-
   }
 
   const avatarLocalPath = req.files?.avatar[0]?.path;
@@ -168,7 +167,6 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 
   const avatarOnlinePath = await uploadOnCloudinary(avatarLocalPath);
-
   if (!avatarOnlinePath) {
     throw new ApiError(500, "Something Went Wrong While Uploading Avatar");
   }
@@ -177,7 +175,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     req.user?.id,
     {
       $set: {
-        avatar: avatarOnlinePath.url,
+        avatar: avatarOnlinePath,
       },
     },
     {
@@ -191,9 +189,9 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 });
 
 const updateUserDetails = asyncHandler(async (req, res) => {
-  const { username, email, birthdate } = req.body;
+  const { username, bio, location, websiteLink } = req.body;
 
-  if (!username || !email || !birthdate) {
+  if (!username || !bio || !location || !websiteLink) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -201,20 +199,53 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     req.user?._id,
     {
       $set: {
-        username: username,
-        email: email,
-        birthdate: birthdate,
+        username: username.toLowerCase(),
+        bio: bio,
+        location: location,
+        website: websiteLink,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password -is_admin -avatar -bannerImage");
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, user, "User Details Updated Successfully"));
+});
+
+const updateBannerImage = asyncHandler(async (req, res) => {
+  const bannerLocalPath = req.file?.path;
+
+  if (!bannerLocalPath) {
+    throw new ApiError(400, "Banner Image is required");
+  }
+
+  const bannerOnlinePath = await uploadOnCloudinary(bannerLocalPath);
+
+  if (!bannerOnlinePath) {
+    throw new ApiError(
+      500,
+      "Something Went Wrong While Uploading Banner Image"
+    );
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?.id,
+    {
+      $set: {
+        bannerImage: bannerOnlinePath,
       },
     },
     {
       new: true,
     }
   ).select("-password -is_admin");
-  console.log("New User Data = ", user);
 
   return res
     .status(200)
-    .json(new ApiResponce(200, user, "User Details Updated Successfully"));
+    .json(new ApiResponce(200, user, "Banner Image Updated Successfully"));
 });
 
 export {
@@ -226,4 +257,5 @@ export {
   updatePassword,
   updateUserAvatar,
   updateUserDetails,
+  updateBannerImage,
 };
