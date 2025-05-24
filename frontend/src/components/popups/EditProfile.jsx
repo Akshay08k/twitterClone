@@ -1,3 +1,4 @@
+import axios from "../../contexts/axios";
 import { useState } from "react";
 
 function EditProfile({ userProfile, onClose, onSave }) {
@@ -15,20 +16,46 @@ function EditProfile({ userProfile, onClose, onSave }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e, type) => {
+  const handleFileChange = async (e, type) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, [type]: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const data = new FormData();
+    const filenameToAppend = type === "profileImage" ? "avatar" : "bannerImage";
+    data.append(filenameToAppend, file);
+
+    try {
+      const endpoint =
+        type === "profileImage" ? "/user/avatar" : "/user/bannerImage";
+      const response = await axios.post(endpoint, data); // don't manually set headers
+
+      const imageUrl = response.data.imageUrl;
+      setFormData((prev) => ({
+        ...prev,
+        [type]: imageUrl,
+      }));
+    } catch (error) {
+      console.error("Image upload failed:", error);
+    }
+  };
+
+  const handleDataUpdate = async () => {
+    try {
+      await axios.post("/user/update-details", {
+        username: formData.name,
+        bio: formData.bio,
+        location: formData.location,
+        websiteLink: formData.website,
+      });
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    handleDataUpdate();
     onClose();
   };
 
@@ -58,7 +85,7 @@ function EditProfile({ userProfile, onClose, onSave }) {
             <div className="aspect-[3/1] relative bg-gray-800">
               <img
                 src={formData.bannerImage}
-                alt=""
+                alt="Banner"
                 className="w-full h-full object-cover"
               />
               <label className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/50 opacity-0 hover:opacity-100 transition">
@@ -78,7 +105,7 @@ function EditProfile({ userProfile, onClose, onSave }) {
               <div className="relative inline-block">
                 <img
                   src={formData.profileImage}
-                  alt=""
+                  alt="Avatar"
                   className="w-32 h-32 rounded-full border-4 border-black aspect-square object-cover"
                 />
                 <label className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/50 opacity-0 hover:opacity-100 transition rounded-full">
@@ -104,7 +131,7 @@ function EditProfile({ userProfile, onClose, onSave }) {
                   value={formData.name}
                   onChange={handleChange}
                   maxLength="50"
-                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none"
+                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none text-white"
                 />
               </div>
 
@@ -116,7 +143,7 @@ function EditProfile({ userProfile, onClose, onSave }) {
                   onChange={handleChange}
                   maxLength="160"
                   rows="3"
-                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none"
+                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none text-white"
                 />
               </div>
 
@@ -130,7 +157,7 @@ function EditProfile({ userProfile, onClose, onSave }) {
                   value={formData.location}
                   onChange={handleChange}
                   maxLength="30"
-                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none"
+                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none text-white"
                 />
               </div>
 
@@ -143,7 +170,7 @@ function EditProfile({ userProfile, onClose, onSave }) {
                   name="website"
                   value={formData.website}
                   onChange={handleChange}
-                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none"
+                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none text-white"
                 />
               </div>
             </div>

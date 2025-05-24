@@ -8,8 +8,10 @@ const PrivateRoutes = ({ element }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    console.log("User not logged in");
+    // return <Navigate to="/login" replace />;
   }
+
 
   return element;
 };

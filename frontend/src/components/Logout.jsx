@@ -7,8 +7,8 @@ export default function Logout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout(); // Update authentication state
-    navigate("/login"); // Redirect to login page
+    logout(); // destory the tokens in local storage
+    navigate("/login");
   };
 
   return <button onClick={handleLogout}>Logout</button>;

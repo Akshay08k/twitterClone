@@ -7,15 +7,13 @@ import {
   NotificationIcon,
 } from "../components/Icons/Icons.jsx";
 import TweetPopup from "./Popups/TweetPopup.jsx";
-import axios from "axios";
+import axios from "../contexts/axios.js";
 
 const Navbar = () => {
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isTweetPopupOpen, setIsTweetPopupOpen] = useState(false);
-  const [userImage, setUserImage] = useState(
-    "default-avatar.png"
-  );
+  const [userImage, setUserImage] = useState("default-avatar.png");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -23,8 +21,8 @@ const Navbar = () => {
         const response = await axios.get("http://localhost:3000/user/me", {
           withCredentials: true, // Make sure cookies are included if needed
         });
-        if (response.data && response.data.data.avatar) {
-          setUserImage(response.data.data.avatar); // Set the avatar URL from the response
+        if (response.data) {
+          setUserImage(response.data.avatar);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -45,7 +43,7 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/home" className="flex-shrink-0">
+              <Link to="/" className="flex-shrink-0">
                 <svg
                   viewBox="0 0 24 24"
                   className="h-8 w-8 text-[#1DA1F2]"
@@ -56,7 +54,7 @@ const Navbar = () => {
               </Link>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <NavLink to="/home" current={location.pathname === "/home"}>
+              <NavLink to="/" current={location.pathname === "/"}>
                 <HomeIcon />
                 <span>Home</span>
               </NavLink>

@@ -21,7 +21,6 @@ const Register = () => {
     if (e.target.files && e.target.files[0]) {
       const avatar = e.target.files[0];
       setAvatar(avatar);
-      console.log(e.target.files[0]);
     }
   };
 
@@ -48,7 +47,7 @@ const Register = () => {
         window.location.href = "/login";
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
       if (res.status === 200) {
         setUser(res.data);
       } else {
+        console.error("Error during user fetch:", res);
         setUser(null);
       }
     } catch (error) {
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
             const retry = await axios.get("/user/me");
             setUser(retry.data);
           } else {
+            console.error("Refresh token failed:", refresh);
             setUser(null);
           }
         } catch (refreshError) {
@@ -43,12 +45,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // useEffect(() => {
-  //   fetchUser(); // Check if the user is authenticated based on the token
-  // }, []);
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, fetchUser }}>
+    <AuthContext.Provider value={{ user, setUser, loading, fetchUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

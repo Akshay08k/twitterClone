@@ -14,7 +14,7 @@ const Profile = () => {
           withCredentials: true,
         });
 
-        const userData = response.data.data;
+        const userData = response.data;
 
         setUserProfile({
           name: userData.username,
@@ -26,6 +26,7 @@ const Profile = () => {
             month: "long",
             year: "numeric",
           }),
+
           following: userData.following || "0",
           followers: userData.followers || "0",
           profileImage: userData.avatar,

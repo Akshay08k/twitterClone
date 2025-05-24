@@ -5,29 +5,29 @@ import Post from "../components/Posts";
 import Navbar from "./Navbar";
 
 const SinglePost = () => {
-  const { postId } = useParams();
+  const { id } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchPost();
-  }, [postId]);
 
   const fetchPost = async () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:3000/posts/post/${postId}`,
+        `http://localhost:3000/posts/post/${id}`,
         { withCredentials: true }
       );
-      setPost(response.data.data);
+      console.log(response.data);
+      setPost(response.data);
       setLoading(false);
     } catch (error) {
       setError("Failed to fetch post");
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchPost();
+  }, [id]);
 
   if (loading) return <div className="text-center p-4">Loading...</div>;
   if (error) return <div className="text-center p-4 text-red-500">{error}</div>;
@@ -37,7 +37,7 @@ const SinglePost = () => {
     <>
       <Navbar />
       <div className="max-w-2xl mx-auto my-16">
-        <Post post={post} onCommentUpdate={fetchPost} />
+        <Post post={post.data} onCommentUpdate={fetchPost} />
       </div>
     </>
   );
