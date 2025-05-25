@@ -7,30 +7,20 @@ import {
   NotificationIcon,
 } from "../components/Icons/Icons.jsx";
 import TweetPopup from "./Popups/TweetPopup.jsx";
-import axios from "../contexts/axios.js";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
+  const reduxUser = useSelector((state) => state.user);
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isTweetPopupOpen, setIsTweetPopupOpen] = useState(false);
   const [userImage, setUserImage] = useState("default-avatar.png");
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/user/me", {
-          withCredentials: true, // Make sure cookies are included if needed
-        });
-        if (response.data) {
-          setUserImage(response.data.avatar);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+    if (reduxUser && reduxUser.avatar) {
+      setUserImage(reduxUser.avatar);
+    }
+  }, [reduxUser]);
 
   // Handle logout
   const handleLogout = () => {

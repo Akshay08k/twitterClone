@@ -1,40 +1,30 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../contexts/axios";
 import CommentThread from "./CommentThread";
+import { useSelector } from "react-redux";
+import { buildCommentTree } from "../utils/buildCommentTree";
 
 const CommentSection = ({ postId }) => {
+  const user = useSelector((state) => state.user);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [error, setError] = useState(null);
 
-  // Fetch comments for the post
   const fetchComments = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/comment/${postId}`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      // Filter to show only top-level comments (no parent)
-      const topLevelComments = response.data.data.filter(
-        (comment) => !comment.parentComment
-      );
-
-      setComments(topLevelComments);
+      const response = await axios.get(`comment/${postId}`);
+      const nestedComments = buildCommentTree(response.data.data);
+      setComments(nestedComments);
     } catch (error) {
       console.error("Error fetching comments:", error);
       setError("Failed to fetch comments");
     }
   };
 
-  // Initial fetch of comments
   useEffect(() => {
     fetchComments();
   }, [postId]);
 
-  // Create a new top-level comment
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -50,10 +40,17 @@ const CommentSection = ({ postId }) => {
       );
 
       if (response.data.success) {
-        const newCommentData = response.data.data;
-
-        // Add new comment to the top of the comments list
+        const newCommentData = {
+          ...response.data.data,
+          replies: [],
+          user: {
+            _id: user._id,
+            username: user.username,
+            avatar: user.avatar,
+          },
+        };
         setComments((prevComments) => [newCommentData, ...prevComments]);
+
         setNewComment("");
       }
     } catch (error) {
@@ -62,26 +59,36 @@ const CommentSection = ({ postId }) => {
     }
   };
 
-  // Handle reply submission
   const handleReplySubmit = (newReply, parentCommentId) => {
-    setComments((prevComments) =>
-      prevComments.map((comment) => {
+    const addReply = (comments) =>
+      comments.map((comment) => {
         if (comment._id === parentCommentId) {
           return {
             ...comment,
-            replies: [...(comment.replies || []), newReply],
+            replies: [...comment.replies, newReply],
+          };
+        } else if (comment.replies?.length > 0) {
+          return {
+            ...comment,
+            replies: addReply(comment.replies),
           };
         }
         return comment;
-      })
-    );
+      });
+
+    setComments((prevComments) => addReply(prevComments));
   };
 
-  // Handle comment deletion
   const handleDelete = (commentId) => {
-    setComments((prevComments) =>
-      prevComments.filter((comment) => comment._id !== commentId)
-    );
+    const deleteComment = (comments) =>
+      comments
+        .filter((comment) => comment._id !== commentId)
+        .map((comment) => ({
+          ...comment,
+          replies: deleteComment(comment.replies),
+        }));
+
+    setComments((prevComments) => deleteComment(prevComments));
   };
 
   if (error) {
@@ -90,14 +97,13 @@ const CommentSection = ({ postId }) => {
 
   return (
     <div className="comment-section bg-black text-white p-4">
-      {/* Comment Input */}
       <form
         onSubmit={handleCommentSubmit}
         className="mb-6 border-b border-gray-800 pb-4"
       >
         <div className="flex space-x-3">
           <img
-            src="/default-avatar.png"
+            src={user.avatar || "/default-avatar.png"}
             alt="Your avatar"
             className="w-10 h-10 rounded-full"
           />
@@ -105,7 +111,7 @@ const CommentSection = ({ postId }) => {
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="What's happening?"
+              placeholder="Write a comment..."
               className="w-full bg-transparent text-white text-lg resize-none focus:outline-none min-h-[80px]"
               rows="3"
             />

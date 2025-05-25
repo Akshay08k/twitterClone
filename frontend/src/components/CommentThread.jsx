@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "../contexts/axios";
+import { useSelector } from "react-redux";
 
 const CommentThread = ({
   comment,
@@ -8,6 +9,7 @@ const CommentThread = ({
   onDelete,
   depth = 0,
 }) => {
+  const user = useSelector((state) => state.user);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showReplies, setShowReplies] = useState(false);
@@ -25,25 +27,24 @@ const CommentThread = ({
     if (!replyText.trim()) return;
 
     try {
-      const response = await axios.post(
-        `http://localhost:3000/comment/create`,
-        {
-          content: replyText,
-          postId: postId,
-          parentCommentId: comment._id,
-        },
-        { withCredentials: true }
-      );
+      const response = await axios.post(`/comment/commentReply`, {
+        content: replyText,
+        postId,
+        parentCommentId: comment._id,
+      });
 
       if (response.data.success) {
-        const newReply = response.data.data;
+        const newReply = {
+          ...response.data.data,
+          replies: [],
+          user: {
+            _id: user._id,
+            username: user.username,
+            avatar: user.avatar,
+          },
+        };
 
-        // Call the parent component's reply submit handler
-        if (onReplySubmit) {
-          onReplySubmit(newReply, comment._id);
-        }
-
-        // Reset reply input and show replies
+        onReplySubmit?.(newReply, comment._id);
         setReplyText("");
         setShowReplyInput(false);
         setShowReplies(true);
@@ -55,11 +56,7 @@ const CommentThread = ({
 
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(
-        `http://localhost:3000/comment/${postId}/${comment._id}`,
-        { withCredentials: true }
-      );
-
+      const response = await axios.delete(`/comment/${postId}/${comment._id}`);
       if (response.data.success && onDelete) {
         onDelete(comment._id);
       }
@@ -113,7 +110,6 @@ const CommentThread = ({
               </svg>
               <span>Reply</span>
             </button>
-
             {comment.replies?.length > 0 && (
               <button
                 onClick={() => setShowReplies(!showReplies)}
@@ -126,20 +122,21 @@ const CommentThread = ({
                     }`}
               </button>
             )}
-
-            <button
-              onClick={handleDelete}
-              className="text-red-500 hover:text-red-600 text-sm"
-            >
-              Delete
-            </button>
+            {comment.user?._id === user._id && (
+              <button
+                onClick={handleDelete}
+                className="text-[#f01d28] text-sm hover:underline"
+              >
+                Delete
+              </button>
+            )}
           </div>
 
           {showReplyInput && (
             <form onSubmit={handleReplySubmit} className="mt-3">
               <div className="flex space-x-3">
                 <img
-                  src="/default-avatar.png"
+                  src={user.avatar || "/default-avatar.png"}
                   alt="Your avatar"
                   className="w-8 h-8 rounded-full"
                 />
@@ -151,7 +148,7 @@ const CommentThread = ({
                     className="w-full bg-transparent text-white text-sm resize-none focus:outline-none min-h-[60px]"
                     rows="2"
                   />
-                  <div className="flex justify-between items-center mt-2">
+                  <div className="flex justify-end mt-2">
                     <button
                       type="submit"
                       disabled={!replyText.trim()}

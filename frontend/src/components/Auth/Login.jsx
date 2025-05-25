@@ -18,7 +18,7 @@ const Login = () => {
       const res = await axios.post("/user/login", formData);
       await fetchUser();
       setUser(res.data.user);
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       console.error(err);
       setError("Invalid credentials or server error");

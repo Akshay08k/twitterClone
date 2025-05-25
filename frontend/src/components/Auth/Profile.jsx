@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../contexts/axios";
 import Navbar from "../Navbar.jsx";
 import EditProfile from "../Popups/EditProfile.jsx";
 
@@ -10,9 +10,7 @@ const Profile = () => {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/user/me", {
-          withCredentials: true,
-        });
+        const response = await axios.get("/user/me");
 
         const userData = response.data;
 

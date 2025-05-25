@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import axios from "../../contexts/axios";
 const TweetPopup = ({ isOpen, onClose }) => {
   const [tweet, setTweet] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -39,17 +39,11 @@ const TweetPopup = ({ isOpen, onClose }) => {
     }
 
     try {
-      const responce = await axios.post(
-        "http://localhost:3000/posts/create",
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
+      const responce = await axios.post("/posts/create", formData);
       if (responce.status === 200) {
         console.log(responce.data);
       } else {
-        console.error("Something giant error occured " + responce.data);
+        console.error("Something Went Wrong " + responce.data);
       }
       setTweet("");
       setSelectedImage(null);

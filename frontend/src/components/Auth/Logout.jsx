@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext.jsx";
-import axios from "axios";
-
+import axios from "../../contexts/axios.js";
 export default function Logout() {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -10,13 +9,7 @@ export default function Logout() {
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        await axios.post(
-          "http://localhost:3000/user/logout",
-          {},
-          {
-            withCredentials: true,
-          }
-        );
+        await axios.post("user/logout");
 
         logout();
 

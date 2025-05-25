@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "../contexts/axios";
 import PostHeader from "./post/PostHeader";
 import PostContent from "./post/PostContent";
 import PostActions from "./post/PostActions";
@@ -16,11 +16,7 @@ const Post = ({ post }) => {
 
   const handleLike = async () => {
     try {
-      const response = await axios.post(
-        `http://localhost:3000/posts/${post._id}/like`,
-        {},
-        { withCredentials: true }
-      );
+      const response = await axios.post(`/posts/${post._id}/like`);
       if (response.data.success) {
         setIsLiked(!isLiked);
         setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
@@ -47,7 +43,7 @@ const Post = ({ post }) => {
     setCommentsCount((prev) => Math.max(prev - 1, 0));
   };
   return (
-    <div className="border-gray-800">
+    <div className="border-gray-800 border-t-4">
       <article className="px-4 pt-3 pb-2 hover:bg-gray-900/50 transition-colors duration-200 cursor-pointer">
         <div className="flex">
           <div className="mr-3">

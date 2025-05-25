@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../contexts/axios";
 import Post from "./Posts";
 
 const PostFeed = () => {
@@ -14,9 +14,7 @@ const PostFeed = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:3000/posts`, {
-        withCredentials: true,
-      });
+      const response = await axios.get(`/posts`);
       if (response.data.success) {
         const newPosts = response.data.data;
         setPosts(newPosts);
@@ -33,7 +31,7 @@ const PostFeed = () => {
   }, [page]);
 
   return (
-    <div className="max-w-2xl mx-auto bg-black pt-20 border-l border-r border-gray-800">
+    <div className="max-w-2xl mx-auto bg-black pt-20 border-l border-r  border-gray-800">
       {posts.map((post) => (
         <Post key={post._id} post={post} />
       ))}

@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect, useContext } from "react";
-import axios from "./axios.js";
+import axios from "../contexts/axios";
+import { useDispatch } from "react-redux";
+import { setUser as setReduxUser } from "./userSlice";
 
 const AuthContext = createContext();
 
@@ -7,14 +9,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const dispatch = useDispatch();
+
+  const syncUser = (userData) => {
+    setUser(userData); // local context state
+    dispatch(setReduxUser(userData)); // redux state
+  };
+
   const fetchUser = async () => {
     try {
       const res = await axios.get("/user/me");
       if (res.status === 200) {
-        setUser(res.data);
+        syncUser(res.data);
       } else {
-        console.error("Error during user fetch:", res);
         setUser(null);
+        dispatch(setReduxUser({})); // clear redux state
       }
     } catch (error) {
       if (error.response?.status === 401) {
@@ -22,18 +31,18 @@ export const AuthProvider = ({ children }) => {
           const refresh = await axios.post("/user/refresh-token");
           if (refresh.status === 200) {
             const retry = await axios.get("/user/me");
-            setUser(retry.data);
+            syncUser(retry.data);
           } else {
-            console.error("Refresh token failed:", refresh);
             setUser(null);
+            dispatch(setReduxUser({}));
           }
-        } catch (refreshError) {
-          console.error("Refresh token failed:", refreshError);
+        } catch {
           setUser(null);
+          dispatch(setReduxUser({}));
         }
       } else {
-        console.error("Error during user fetch:", error);
         setUser(null);
+        dispatch(setReduxUser({}));
       }
     } finally {
       setLoading(false);
@@ -43,6 +52,9 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await axios.post("/user/logout");
     setUser(null);
+    //Dont have to it manually in file
+    //as we have combined the redux and authContext
+    dispatch(setReduxUser({})); // clearing redux store on logout
   };
 
   useEffect(() => {
@@ -50,7 +62,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, fetchUser, logout }}>
+    <AuthContext.Provider
+      value={{ user, setUser: syncUser, loading, fetchUser, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

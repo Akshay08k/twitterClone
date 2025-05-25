@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { redirect } from "react-router";
+import axios from "../../contexts/axios";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -41,7 +40,7 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post("http://localhost:3000/user/register", data);
+      const res = await axios.post("/user/register", data);
 
       if (res.status === 200) {
         window.location.href = "/login";

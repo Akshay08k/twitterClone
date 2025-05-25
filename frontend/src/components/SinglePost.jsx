@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../contexts/axios";
 import { useParams } from "react-router-dom";
 import Post from "../components/Posts";
 import Navbar from "./Navbar";
@@ -13,11 +13,8 @@ const SinglePost = () => {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:3000/posts/post/${id}`,
-        { withCredentials: true }
-      );
-      console.log(response.data);
+      const response = await axios.get(`/posts/post/${id}`);
+
       setPost(response.data);
       setLoading(false);
     } catch (error) {
