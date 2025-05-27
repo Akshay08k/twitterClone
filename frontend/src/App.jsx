@@ -16,7 +16,7 @@ import Register from "./components/Auth/Register";
 import Home from "./components/Home";
 import ProfileUpdate from "./components/Auth/Profile";
 import Logout from "./components/Auth/Logout";
-import TrendingSection from "./components/Trending/Trending";
+import ExploreTab from "./components/Trending/ExploreTab";
 import SinglePost from "./components/SinglePost";
 import Profile from "./components/Auth/Profile";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -30,7 +30,7 @@ const App = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<Layout />}>
               <Route path="/" element={<Home />} />
-              <Route path="treading" element={<TrendingSection />} />
+              <Route path="explore" element={<ExploreTab />} />
               <Route path="updates" element={<ProfileUpdate />} />
               <Route path="posts/:id" element={<SinglePost />} />
               <Route path="logout" element={<Logout />} />
