@@ -19,6 +19,7 @@ import Logout from "./components/Auth/Logout";
 import ExploreTab from "./components/Trending/ExploreTab";
 import SinglePost from "./components/SinglePost";
 import Profile from "./components/Auth/Profile";
+import ProfileVisiting from "./components/ProfileVisiting";
 import ErrorBoundary from "./components/ErrorBoundary";
 const App = () => {
   return (
@@ -35,6 +36,7 @@ const App = () => {
               <Route path="posts/:id" element={<SinglePost />} />
               <Route path="logout" element={<Logout />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:username" element={<ProfileVisiting />} />
               <Route path="*" element={<ErrorBoundary />} />
             </Route>
           </Routes>

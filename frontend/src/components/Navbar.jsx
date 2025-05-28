@@ -35,7 +35,6 @@ const Navbar = () => {
             <div className="flex items-center">
               <Link to="/" className="flex-shrink-0">
                 <img
-                  
                   src="/assets/logo-white.png"
                   alt="Twitter Logo"
                   className=" h-6 w-6"
@@ -47,11 +46,11 @@ const Navbar = () => {
                 <HomeIcon />
                 <span>Home</span>
               </NavLink>
-
+              {/* 
               <NavLink to="/explore" current={location.pathname === "/explore"}>
                 <ExploreIcon />
                 <span>Explore</span>
-              </NavLink>
+              </NavLink> */}
 
               <NavLink
                 to="/notifications"

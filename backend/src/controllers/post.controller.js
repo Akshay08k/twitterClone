@@ -1,12 +1,12 @@
-import { Post } from "../models/post.model.js";
 import {
   ApiError,
   ApiResponce,
   uploadOnCloudinary,
   asyncHandler,
 } from "../utils/index.js";
-import { PostLikes } from "../models/postlikes.model.js";
 import { Comment } from "../models/comments.model.js";
+import Post from "../Models/post.model.js";
+import { PostLikes } from "../Models/postlikes.model.js";
 
 const createPost = asyncHandler(async (req, res) => {
   const { description } = req.body;

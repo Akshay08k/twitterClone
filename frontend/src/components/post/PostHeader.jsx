@@ -12,9 +12,13 @@ const PostHeader = ({ user, createdAt }) => {
     <>
       <div className="flex items-center text-sm leading-5 space-x-1">
         <span className="font-bold text-white hover:underline">
-          {user?.username}
+          <a href={`/profile/${user?.username}`}>
+            {user?.username || user.name}
+          </a>
         </span>
-        <span className="text-gray-500">@{user?.username?.toLowerCase()}</span>
+        <span className="text-gray-500">
+          @{user?.username?.toLowerCase() || user.name.toLowerCase()}
+        </span>
         <span className="text-gray-500">·</span>
         <span className="text-gray-500 hover:underline">
           {formatDate(createdAt)}

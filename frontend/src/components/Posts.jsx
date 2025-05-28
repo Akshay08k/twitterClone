@@ -48,8 +48,12 @@ const Post = ({ post }) => {
         <div className="flex">
           <div className="mr-3">
             <img
-              src={post.user?.avatar || "/default-avatar.png"}
-              alt={post.user?.username}
+              src={
+                post.user.avatar ||
+                post.user.profileImage ||
+                "/default-avatar.png"
+              }
+              alt={post.user.username}
               className="w-11 h-11 rounded-full"
             />
           </div>

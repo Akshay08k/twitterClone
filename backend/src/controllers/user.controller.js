@@ -1,5 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../Models/user.model.js";
+import Post from "../Models/post.model.js";
+import { Comment } from "../models/comments.model.js";
+import { PostLikes } from "../Models/postlikes.model.js";
+import { Follower } from "../Models/follower.model.js";
 import {
   ApiError,
   ApiResponce,
@@ -43,6 +47,54 @@ const me = asyncHandler(async (req, res) => {
     "-passwordHash -refreshToken -is_admin -password"
   );
   res.status(200).json(user);
+});
+
+const getUserByUsername = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+
+  const user = await User.findOne({ username }).select(
+    "-passwordHash -refreshToken -is_admin -password -email"
+  );
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  const userPosts = await Post.find({ user: user._id }).sort({ createdAt: -1 });
+  const [userFollowers, userFollowing] = await Promise.all([
+    Follower.find({ follower: user._id }),
+    Follower.find({ user: user._id }),
+  ]);
+
+  const userPostsWithLikesInfo = await Promise.all(
+    userPosts.map(async (post) => {
+      const [likesCount, comments, commentsCount, userLiked] =
+        await Promise.all([
+          PostLikes.countDocuments({ post: post._id }),
+          Comment.find({ post: post._id }),
+          Comment.countDocuments({ post: post._id }),
+          PostLikes.exists({ post: post._id, user: req.user?._id }),
+        ]);
+
+      return {
+        ...post.toObject(),
+        comments,
+        commentsCount,
+        likesCount,
+        userLiked: !!userLiked,
+      };
+    })
+  );
+
+  res.status(200).json({
+    user,
+    userMeta: {
+      followersCount: userFollowers.length,
+      followingCount: userFollowing.length,
+    },
+    posts: userPostsWithLikesInfo,
+  });
 });
 
 const logout = asyncHandler(async (req, res) => {
@@ -258,4 +310,5 @@ export {
   updateUserAvatar,
   updateUserDetails,
   updateBannerImage,
+  getUserByUsername,
 };
