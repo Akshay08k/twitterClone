@@ -7,6 +7,7 @@ import {
 import { Comment } from "../models/comments.model.js";
 import Post from "../Models/post.model.js";
 import { PostLikes } from "../Models/postlikes.model.js";
+import { Notification } from "../Models/notification.model.js";
 
 const createPost = asyncHandler(async (req, res) => {
   const { description } = req.body;
@@ -62,29 +63,55 @@ const PostLikeHandler = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   const post = await Post.findById(postId);
+  if (!post) throw new ApiError(404, "Post not found");
 
-  if (!post) {
-    throw new ApiError(404, "Post Not Found");
-  }
-
-  const existingLike = await PostLikes.findOne({
-    post: postId,
-    user: userId,
-  });
+  const existingLike = await PostLikes.findOne({ post: postId, user: userId });
 
   if (existingLike) {
     await PostLikes.findByIdAndDelete(existingLike._id);
+    await Notification.findOneAndUpdate(
+      {
+        type: "like",
+        sourceUserId: userId,
+        receiverUserId: post.user,
+        sourcePostId: postId,
+      },
+      { isHidden: true }
+    );
+
     return res
       .status(200)
-      .json(new ApiResponce(200, {}, "Post Unliked Successfully"));
+      .json(new ApiResponce(200, {}, "Post unliked successfully"));
   } else {
-    await PostLikes.create({
-      post: postId,
-      user: userId,
+    // Check for existing notification
+    const existingNotification = await Notification.findOne({
+      type: "like",
+      sourceUserId: userId,
+      receiverUserId: post.user,
+      sourcePostId: postId,
     });
+
+    if (existingNotification) {
+      existingNotification.isHidden = false;
+      existingNotification.updatedAt = new Date();
+      await existingNotification.save();
+    } else {
+      await Notification.create({
+        receiverUserId: post.user,
+        sourceUserId: userId,
+        sourcePostId: postId,
+        type: "like",
+        content: `${req.user.username} liked your post`,
+        is_read: false,
+        isHidden: false,
+      });
+    }
+
+    await PostLikes.create({ post: postId, user: userId });
+
     return res
       .status(200)
-      .json(new ApiResponce(200, {}, "Post Liked Successfully"));
+      .json(new ApiResponce(200, {}, "Post liked successfully"));
   }
 });
 

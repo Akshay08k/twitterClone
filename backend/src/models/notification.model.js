@@ -1,35 +1,34 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const NotificationSchema = new Schema({
-    //     id
-    // type(retweet,follow,like,mention)
-    // sourceUserId
-    // sourcepostID
-    // content
-    // isRead
-
+const notificationSchema = new mongoose.Schema(
+  {
     type: {
-        type: String,
-        required: true
+      type: String,
+      enum: ["like", "follow", "comment", "reply"],
+      required: true,
     },
     sourceUserId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        default: null
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    receiverUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     sourcePostId: {
-        type: Schema.Types.ObjectId,
-        ref: "Post",
-        default: null
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+      default: null,
     },
-    content: {
-        type: String,
-        required: true
-    },
-    is_read: {
-        type: Boolean,
-        default: false
-    }   
-})
+    content: { type: String, required: true },
+    is_read: { type: Boolean, default: false },
+    isHidden: { type: Boolean, default: false }, // NEW
+  },
+  {
+    timestamps: true,
+  }
+);
 
-export const Notification = mongoose.model("Notification", NotificationSchema);
+export const Notification = mongoose.model("Notification", notificationSchema);

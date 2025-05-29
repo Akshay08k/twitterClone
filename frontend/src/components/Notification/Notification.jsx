@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "../../contexts/axios";
 import {
   Heart,
   MessageCircle,
@@ -6,85 +7,13 @@ import {
   UserPlus,
   AtSign,
   Settings,
+  BellOffIcon,
 } from "lucide-react";
 
 const NotificationPage = () => {
   const [activeTab, setActiveTab] = useState("all");
-
-  const notifications = [
-    {
-      id: 1,
-      type: "like",
-      user: { name: "Sarah Johnson", username: "sarahj_dev", avatar: "👩‍💻" },
-      content: "liked your tweet",
-      tweet: "Just shipped a new feature! 🚀 #coding #webdev",
-      time: "2m",
-      isNew: true,
-    },
-    {
-      id: 2,
-      type: "follow",
-      user: { name: "Alex Chen", username: "alexchen_ui", avatar: "👨‍🎨" },
-      content: "started following you",
-      time: "5m",
-      isNew: true,
-    },
-    {
-      id: 3,
-      type: "retweet",
-      user: { name: "Mike Wilson", username: "mikew_tech", avatar: "👨‍💼" },
-      content: "retweeted your tweet",
-      tweet: "React hooks are game changers for state management 💯",
-      time: "15m",
-      isNew: false,
-    },
-    {
-      id: 4,
-      type: "mention",
-      user: { name: "Emma Davis", username: "emma_codes", avatar: "👩‍🔬" },
-      content: "mentioned you in a tweet",
-      tweet: "Great article by @yourhandle about modern JavaScript patterns!",
-      time: "1h",
-      isNew: false,
-    },
-    {
-      id: 5,
-      type: "like",
-      user: { name: "David Park", username: "davidp_design", avatar: "👨‍🎨" },
-      content: "liked your tweet",
-      tweet:
-        "Clean code is not just about functionality, its about readability too 📚",
-      time: "2h",
-      isNew: false,
-    },
-    {
-      id: 6,
-      type: "follow",
-      user: { name: "Lisa Zhang", username: "lisa_frontend", avatar: "👩‍💻" },
-      content: "started following you",
-      time: "3h",
-      isNew: false,
-    },
-    {
-      id: 7,
-      type: "retweet",
-      user: { name: "James Rodriguez", username: "jamesrod_js", avatar: "👨‍💻" },
-      content: "retweeted your tweet",
-      tweet: "TypeScript makes JavaScript development so much better! 🔥",
-      time: "5h",
-      isNew: false,
-    },
-    {
-      id: 8,
-      type: "mention",
-      user: { name: "Ana Silva", username: "ana_webdev", avatar: "👩‍💼" },
-      content: "mentioned you in a tweet",
-      tweet:
-        "Thanks to @yourhandle for the awesome tutorial on React components!",
-      time: "1d",
-      isNew: false,
-    },
-  ];
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const getNotificationIcon = (type) => {
     switch (type) {
@@ -101,50 +30,69 @@ const NotificationPage = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await axios.get("/notification/fetch");
+
+        setNotifications(res.data);
+      } catch (err) {
+        console.error("Failed to fetch notifications", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
   const filteredNotifications = notifications.filter((notification) => {
     if (activeTab === "all") return true;
     return notification.type === activeTab;
   });
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <p className="text-gray-400">Loading notifications...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white transition-colors duration-300">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="sticky top-0 z-10 backdrop-blur-md bg-opacity-80 bg-black">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Notifications</h1>
-            <div className="flex items-center gap-4">
-              <button className="p-2 rounded-full hover:bg-gray-800">
-                <Settings className="w-5 h-5" />
-              </button>
-            </div>
+            <button className="p-2 rounded-full hover:bg-gray-800">
+              <Settings className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div>
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex">
-            {["all", "like", "retweet", "follow", "mention"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-3 font-medium transition-colors ${
-                  activeTab === tab
-                    ? "text-blue-400 border-b-2 border-blue-400"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                {tab === "all" && (
-                  <span className="ml-2 text-sm opacity-70">
-                    ({notifications.length})
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="flex">
+          {["all", "like", "retweet", "follow", "mention"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeTab === tab
+                  ? "text-blue-400 border-b-2 border-blue-400"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "all" && (
+                <span className="ml-2 text-sm opacity-70">
+                  ({notifications.length})
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -153,39 +101,43 @@ const NotificationPage = () => {
         <div className="space-y-1">
           {filteredNotifications.map((notification) => (
             <div
-              key={notification.id}
-              className="bg-black rounded-lg p-4 transition-all duration-200 cursor-pointer relative"
+              key={notification._id}
+              className="bg-black  rounded-2xl p-4 relative shadow-md hover:bg-[#1a1a1a] transition-colors"
             >
-              {notification.isNew && (
+              {!notification.is_read && (
                 <div className="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full"></div>
               )}
 
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
+                <div className="mt-1">
                   {getNotificationIcon(notification.type)}
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">{notification.user.avatar}</span>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold">
-                        {notification.user.name}
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <img
+                      src={
+                        notification.sourceUserId?.avatar ||
+                        "https://ui-avatars.com/api/?name=User&background=333333&color=ffffff"
+                      }
+                      alt="avatar"
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <span className="font-bold block">
+                        {notification.sourceUserId?.username || "user"}
                       </span>
-                      <span className="text-sm text-gray-400">
-                        @{notification.user.username}
-                      </span>
-                      <span className="text-sm text-gray-400">
-                        • {notification.time}
+                      <span className="text-sm text-gray-400 block">
+                        @{notification.sourceUserId?.userHandle || "unknown"}
                       </span>
                     </div>
                   </div>
-
                   <p className="text-gray-300 mb-2">{notification.content}</p>
-
-                  {notification.tweet && (
-                    <div className="bg-black-800 border border-gray-100 border-opacity-20 rounded-lg p-3 text-sm">
-                      <p className="text-gray-300">"{notification.tweet}"</p>
+                  {console.log(notification.sourcePostId)}
+                  {notification.sourcePostId && (
+                    <div className="bg-black rounded-lg p-3 text-sm border-gray-100 border border-opacity-15">
+                      <p className="text-gray-300">
+                        {notification.sourcePostId.description.slice(0, 15)}...
+                      </p>
                     </div>
                   )}
                 </div>
@@ -196,7 +148,9 @@ const NotificationPage = () => {
 
         {filteredNotifications.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔔</div>
+            <div className="flex justify-center mb-4">
+              <BellOffIcon className="w-12 h-12 text-gray-400" />
+            </div>
             <h3 className="text-xl font-semibold mb-2">No notifications yet</h3>
             <p className="text-gray-400">
               When someone interacts with your tweets, you'll see it here.
