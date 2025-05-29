@@ -21,6 +21,8 @@ import SinglePost from "./components/SinglePost";
 import Profile from "./components/Auth/Profile";
 import ProfileVisiting from "./components/ProfileVisiting";
 import ErrorBoundary from "./components/ErrorBoundary";
+import Settings from "./components/Settings/SettingsPage";
+import NotificationPage from "./components/Notification/Notification";
 const App = () => {
   return (
     <Provider store={store}>
@@ -34,8 +36,10 @@ const App = () => {
               <Route path="explore" element={<ExploreTab />} />
               <Route path="updates" element={<ProfileUpdate />} />
               <Route path="posts/:id" element={<SinglePost />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="logout" element={<Logout />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/notifications" element={<NotificationPage />} />
               <Route path="/profile/:username" element={<ProfileVisiting />} />
               <Route path="*" element={<ErrorBoundary />} />
             </Route>
