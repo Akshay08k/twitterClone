@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await axios.get("/user/me");
       if (res.status === 200) {
-        syncUser(res.data);
+        syncUser(res.data.user);
       } else {
         setUser(null);
         dispatch(setReduxUser({})); // clear redux state
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
           const refresh = await axios.post("/user/refresh-token");
           if (refresh.status === 200) {
             const retry = await axios.get("/user/me");
-            syncUser(retry.data);
+            syncUser(retry.data.user);
           } else {
             setUser(null);
             dispatch(setReduxUser({}));

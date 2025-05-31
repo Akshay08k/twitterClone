@@ -11,12 +11,15 @@ import { Notification } from "../Models/notification.model.js";
 
 const createPost = asyncHandler(async (req, res) => {
   const { description } = req.body;
+  let postImagesOnlinePath;
   if (!description) {
     throw new ApiError(400, "All fields are required");
   }
-  const postImages = req.files?.postImages[0]?.path;
 
-  const postImagesOnlinePath = await uploadOnCloudinary(postImages);
+  if (req.files.postImages) {
+    const postImages = req.files?.postImages[0]?.path;
+    postImagesOnlinePath = await uploadOnCloudinary(postImages);
+  }
 
   const post = await Post.create({
     description,
@@ -67,6 +70,7 @@ const PostLikeHandler = asyncHandler(async (req, res) => {
 
   const existingLike = await PostLikes.findOne({ post: postId, user: userId });
 
+  // If already liked, remove like and hide notification
   if (existingLike) {
     await PostLikes.findByIdAndDelete(existingLike._id);
     await Notification.findOneAndUpdate(
@@ -82,8 +86,11 @@ const PostLikeHandler = asyncHandler(async (req, res) => {
     return res
       .status(200)
       .json(new ApiResponce(200, {}, "Post unliked successfully"));
-  } else {
-    // Check for existing notification
+  }
+
+  // Prevent notification if liking own post
+  const isSelfLike = post.user.toString() === userId.toString();
+  if (!isSelfLike) {
     const existingNotification = await Notification.findOne({
       type: "like",
       sourceUserId: userId,
@@ -106,13 +113,13 @@ const PostLikeHandler = asyncHandler(async (req, res) => {
         isHidden: false,
       });
     }
-
-    await PostLikes.create({ post: postId, user: userId });
-
-    return res
-      .status(200)
-      .json(new ApiResponce(200, {}, "Post liked successfully"));
   }
+
+  await PostLikes.create({ post: postId, user: userId });
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, {}, "Post liked successfully"));
 });
 
 const getPosts = asyncHandler(async (req, res) => {
@@ -146,4 +153,51 @@ const getPosts = asyncHandler(async (req, res) => {
     );
 });
 
-export { createPost, getPosts, PostLikeHandler, getSinglePost };
+const deletePost = asyncHandler(async (req, res) => {
+  const postId = req.params.postId;
+  await Post.findByIdAndDelete(postId);
+  return res
+    .status(200)
+    .json(new ApiResponce(200, {}, "Post Deleted Successfully"));
+});
+
+const fetchingPostsByUserId = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  const posts = await Post.find({ user: userId })
+    .populate("user", "-passwordHash -refreshToken -is_admin -password -email")
+    .sort({ createdAt: -1 });
+
+  const postsWithMeta = await Promise.all(
+    posts.map(async (post) => {
+      const [likesCount, comments, commentsCount, userLiked] =
+        await Promise.all([
+          PostLikes.countDocuments({ post: post._id }),
+          Comment.find({ post: post._id }),
+          Comment.countDocuments({ post: post._id }),
+          PostLikes.exists({ post: post._id, user: req.user?._id }),
+        ]);
+
+      return {
+        ...post.toObject(),
+        comments,
+        commentsCount,
+        likesCount,
+        userLiked: !!userLiked,
+      };
+    })
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, postsWithMeta, "Posts Fetched Successfully"));
+});
+
+export {
+  createPost,
+  getPosts,
+  PostLikeHandler,
+  getSinglePost,
+  deletePost,
+  fetchingPostsByUserId,
+};

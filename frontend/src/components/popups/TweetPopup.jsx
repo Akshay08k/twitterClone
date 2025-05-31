@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "../../contexts/axios";
 import { useSelector } from "react-redux";
-
+import toast, { Toaster } from "react-hot-toast";
 const TweetPopup = ({ isOpen, onClose }) => {
   const reduxUser = useSelector((state) => state.user);
   const [tweet, setTweet] = useState("");
@@ -51,7 +51,10 @@ const TweetPopup = ({ isOpen, onClose }) => {
         setTweet("");
         setSelectedImage(null);
         setImagePreview("");
-        onClose();
+        toast.success("Tweet Posted Successfully");
+        setTimeout(() => {
+          onClose();
+        }, 1000);
       } else {
         console.error("Something Went Wrong " + response.data);
       }
@@ -85,7 +88,7 @@ const TweetPopup = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-black bg-opacity-60 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose}></div>
-
+      <Toaster />
       <div className="relative bg-black w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-800 transform transition-all duration-300 scale-100 animate-in slide-in-from-top-4">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-800">

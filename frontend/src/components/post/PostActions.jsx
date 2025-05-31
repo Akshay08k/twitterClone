@@ -15,7 +15,7 @@ const PostActions = ({
       <div className="flex justify-between mt-3 max-w-md">
         <button
           onClick={toggleComments}
-          className="group flex items-center text-gray-500 hover:text-[#1d9bf0] transition-colors"
+          className="group flex items-center  text-gray-500 hover:text-[#1d9bf0] transition-colors"
         >
           <div className="p-2 rounded-full group-hover:bg-[#1d9bf0]/10">
             <svg

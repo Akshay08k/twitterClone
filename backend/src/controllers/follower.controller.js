@@ -112,16 +112,20 @@ const isFollowing = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   const follower = await Follower.findOne({
-    user: req.user._id,
-    follower: userId,
+    user: userId,
+    follower: req.user._id,
   });
 
   const isFollowing = !!follower; // Convert to boolean
-  return res
-    .status(200)
-    .json(
-      new ApiResponce(200, isFollowing, "Following status fetched successfully")
-    );
+  return res.status(200).json(
+    new ApiResponce(
+      200,
+      {
+        isFollowing: isFollowing,
+      },
+      "Following status fetched successfully"
+    )
+  );
 });
 
 export {

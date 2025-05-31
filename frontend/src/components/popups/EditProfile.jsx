@@ -3,12 +3,13 @@ import { useState } from "react";
 
 function EditProfile({ userProfile, onClose, onSave }) {
   const [formData, setFormData] = useState({
-    name: userProfile.name,
+    username: userProfile.username,
     bio: userProfile.bio,
     location: userProfile.location || "",
     website: userProfile.website || "",
     profileImage: userProfile.profileImage,
     bannerImage: userProfile.bannerImage,
+    userHandle: userProfile.userHandle,
   });
 
   const handleChange = (e) => {
@@ -42,10 +43,11 @@ function EditProfile({ userProfile, onClose, onSave }) {
   const handleDataUpdate = async () => {
     try {
       await axios.post("/user/update-details", {
-        username: formData.name,
+        username: formData.username,
         bio: formData.bio,
         location: formData.location,
         websiteLink: formData.website,
+        userHandle: formData.userHandle,
       });
       window.location.reload();
     } catch (error) {
@@ -124,13 +126,28 @@ function EditProfile({ userProfile, onClose, onSave }) {
 
             <div className="p-4 space-y-4 mt-12">
               <div>
-                <label className="block text-gray-500 text-sm mb-1">Name</label>
+                <label className="block text-gray-500 text-sm mb-1">
+                  username
+                </label>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="username"
+                  value={formData.username}
                   onChange={handleChange}
                   maxLength="50"
+                  className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 text-sm mb-1">
+                  User handle
+                </label>
+                <input
+                  type="text"
+                  name="userHandle"
+                  value={formData.userHandle}
+                  onChange={handleChange}
+                  maxLength="30"
                   className="w-full bg-black border border-gray-800 rounded-md p-2 focus:border-blue-500 focus:outline-none text-white"
                 />
               </div>

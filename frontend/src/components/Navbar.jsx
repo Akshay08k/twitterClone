@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import {
   HomeIcon,
   MessageIcon,
-  ExploreIcon,
   NotificationIcon,
 } from "../components/Icons/Icons.jsx";
 import TweetPopup from "./Popups/TweetPopup.jsx";

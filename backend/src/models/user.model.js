@@ -10,6 +10,12 @@ const UserSchema = new Schema(
       unique: true,
       trim: true,
     },
+    userHandle: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
     email: {
       type: String,
       required: true,
@@ -55,6 +61,14 @@ const UserSchema = new Schema(
     },
     refreshToken: {
       type: String,
+    },
+    isPrivateAccount: {
+      type: Boolean,
+      default: false,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   {

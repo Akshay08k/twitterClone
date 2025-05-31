@@ -6,6 +6,7 @@ import postRoute from "./src/routes/post.routes.js";
 import commentRoute from "./src/routes/comment.routes.js";
 import followRouter from "./src/routes/follower.routes.js";
 import notificationRouter from "./src/routes/notification.route.js";
+import FollowRequest from "./src/routes/followrequest.route.js";
 const app = express();
 
 app.use(
@@ -25,5 +26,5 @@ app.use("/posts", postRoute);
 app.use("/comment", commentRoute);
 app.use("/follow", followRouter);
 app.use("/notification", notificationRouter);
-
+app.use("/follow_request", FollowRequest);
 export { app };

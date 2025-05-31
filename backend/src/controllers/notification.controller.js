@@ -5,8 +5,8 @@ const getNotifications = asyncHandler(async (req, res) => {
     receiverUserId: req.user._id,
     isHidden: false,
   })
-    .populate("sourceUserId", "username name avatar")
-    .populate("sourcePostId")
+    .populate("sourceUserId", "username name avatar userHandle")
+    .populate("sourcePostId") 
     .sort({ createdAt: -1 });
 
   res.status(200).json(notifications);

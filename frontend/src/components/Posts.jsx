@@ -5,7 +5,7 @@ import PostContent from "./post/PostContent";
 import PostActions from "./post/PostActions";
 import CommentSection from "./CommentSection";
 
-const Post = ({ post }) => {
+const Post = ({ post, editable = false }) => {
   const [isLiked, setIsLiked] = useState(post.userLiked);
   const [showComments, setShowComments] = useState(false);
   const [isRetweeted, setIsRetweeted] = useState(post.isRetweeted);
@@ -26,10 +26,20 @@ const Post = ({ post }) => {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`/posts/${post._id}`);
+      // You can add a callback here to remove post from parent list if needed
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+
   const handleCommentUpdate = (newComment, deletedCommentId = null) => {
     if (deletedCommentId) {
       setComments((prev) =>
-        prev.filter((comments) => comments._id !== deletedCommentId)
+        prev.filter((comment) => comment._id !== deletedCommentId)
       );
       setCommentsCount((prev) => Math.max(prev - 1, 0));
     } else if (newComment) {
@@ -42,37 +52,52 @@ const Post = ({ post }) => {
     setComments((prev) => prev.filter((comment) => comment._id !== commentId));
     setCommentsCount((prev) => Math.max(prev - 1, 0));
   };
+
   return (
     <div className="border-gray-800 border-t-4">
       <article className="px-4 pt-3 pb-2 hover:bg-gray-900/50 transition-colors duration-200 cursor-pointer">
-        <div className="flex">
-          <div className="mr-3">
-            <img
-              src={
-                post.user.avatar ||
-                post.user.profileImage ||
-                "/default-avatar.png"
-              }
-              alt={post.user.username}
-              className="w-11 h-11 rounded-full"
-            />
+        <div className="flex justify-between">
+          <div className="flex">
+            <div className="mr-3">
+              <img
+                src={
+                  post.user.avatar ||
+                  post.user.profileImage ||
+                  "/default-avatar.png"
+                }
+                alt={post.user.username}
+                className="w-11 h-11 rounded-full"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <PostHeader user={post.user} createdAt={post.createdAt} />
+              <PostContent post={post} />
+              <PostActions
+                isLiked={isLiked}
+                isRetweeted={isRetweeted}
+                likesCount={likesCount}
+                commentsCount={commentsCount}
+                retweetsCount={retweetsCount}
+                handleLike={handleLike}
+                handleRetweet={() => {}}
+                toggleComments={() => setShowComments(!showComments)}
+              />
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <PostHeader user={post.user} createdAt={post.createdAt} />
-            <PostContent post={post} />
-            <PostActions
-              isLiked={isLiked}
-              isRetweeted={isRetweeted}
-              likesCount={likesCount}
-              commentsCount={commentsCount}
-              retweetsCount={retweetsCount}
-              handleLike={handleLike}
-              handleRetweet={() => {}}
-              toggleComments={() => setShowComments(!showComments)}
-            />
-          </div>
+
+          {editable && (
+            <div className="space-x-2 mt-1 flex items-start">
+              <button
+                onClick={handleDelete}
+                className="text-sm text-red-500 hover:underline"
+              >
+                asdf
+              </button>
+            </div>
+          )}
         </div>
       </article>
+
       {showComments && (
         <CommentSection
           postId={post._id}

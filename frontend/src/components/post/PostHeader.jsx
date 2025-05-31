@@ -12,12 +12,10 @@ const PostHeader = ({ user, createdAt }) => {
     <>
       <div className="flex items-center text-sm leading-5 space-x-1">
         <span className="font-bold text-white hover:underline">
-          <a href={`/profile/${user?.username}`}>
-            {user?.username || user.name}
-          </a>
+          <a href={`/profile/${user?.username}`}>{user?.username}</a>
         </span>
         <span className="text-gray-500">
-          @{user?.username?.toLowerCase() || user.name.toLowerCase()}
+          @{user?.userHandle?.toLowerCase()}
         </span>
         <span className="text-gray-500">·</span>
         <span className="text-gray-500 hover:underline">
