@@ -10,6 +10,7 @@ import {
   updateUserDetails,
   updateBannerImage,
   getUserByUsername,
+  deleteAccount,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT, validateToken } from "../middlewares/auth.middleware.js";
@@ -42,5 +43,6 @@ router.route("/me").get(verifyJWT, me);
 router.route("/update-details").post(verifyJWT, updateUserDetails);
 router.route("/profile/:username").get(verifyJWT, getUserByUsername);
 router.route("/logout").post(verifyJWT, logout);
+router.route("/delete-account").delete(verifyJWT, deleteAccount);
 
 export default router;

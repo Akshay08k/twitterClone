@@ -338,6 +338,13 @@ const updateBannerImage = asyncHandler(async (req, res) => {
     .json(new ApiResponce(200, user, "Banner Image Updated Successfully"));
 });
 
+const deleteAccount = asyncHandler(async (req, res) => {
+  const user = await User.findByIdAndDelete(req.user?._id);
+  return res
+    .status(200)
+    .json(new ApiResponce(200, user, "Account Deleted Successfully"));
+});
+
 export {
   registerUser,
   login,
@@ -349,4 +356,5 @@ export {
   updateUserDetails,
   updateBannerImage,
   getUserByUsername,
+  deleteAccount,
 };

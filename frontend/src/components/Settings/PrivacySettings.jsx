@@ -1,76 +1,63 @@
-import React, { useState } from 'react';
-import ToggleSwitch from './ToggleSwitch';
-import { Shield, Eye, Users, MessageSquare } from 'lucide-react';
+import React, { useState } from "react";
+import ToggleSwitch from "./ToggleSwitch";
+import axios from "../../contexts/axios";
+import { Shield, Eye, Users, MessageSquare } from "lucide-react";
 
 const PrivacySettings = () => {
   const [privacySettings, setPrivacySettings] = useState({
     privateAccount: false,
-    allowTagging: true,
     allowMentions: true,
     showFollowers: true,
     allowDirectMessages: true,
-    photoTagging: true
   });
 
   const handleSettingChange = (key, value) => {
-    setPrivacySettings(prev => ({
+    setPrivacySettings((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
 
   const privacyOptions = [
     {
-      key: 'privateAccount',
-      title: 'Private Account',
-      description: 'Only approved followers can see your tweets and profile',
+      key: "privateAccount",
+      title: "Private Account",
+      description: "Only approved followers can see your tweets and profile",
       icon: Shield,
-      value: privacySettings.privateAccount
+      value: privacySettings.privateAccount,
     },
+
     {
-      key: 'allowTagging',
-      title: 'Allow Tagging in Retweets',
-      description: 'Let others tag you when they retweet content',
-      icon: Users,
-      value: privacySettings.allowTagging
-    },
-    {
-      key: 'allowMentions',
-      title: 'Allow Mentions',
-      description: 'Anyone can mention you in their tweets',
+      key: "allowMentions",
+      title: "Allow Mentions",
+      description: "Anyone can mention you in their tweets",
       icon: MessageSquare,
-      value: privacySettings.allowMentions
+      value: privacySettings.allowMentions,
     },
     {
-      key: 'showFollowers',
-      title: 'Show Followers List',
-      description: 'Make your followers and following lists visible to others',
+      key: "showFollowers",
+      title: "Show Followers List",
+      description: "Make your followers and following lists visible to others",
       icon: Eye,
-      value: privacySettings.showFollowers
+      value: privacySettings.showFollowers,
     },
     {
-      key: 'allowDirectMessages',
-      title: 'Allow Direct Messages',
-      description: 'Anyone can send you direct messages',
+      key: "allowDirectMessages",
+      title: "Allow Direct Messages",
+      description: "Anyone can send you direct messages",
       icon: MessageSquare,
-      value: privacySettings.allowDirectMessages
+      value: privacySettings.allowDirectMessages,
     },
-    {
-      key: 'photoTagging',
-      title: 'Photo Tagging',
-      description: 'Allow others to tag you in photos',
-      icon: Users,
-      value: privacySettings.photoTagging
-    }
   ];
 
   const handleSave = async () => {
     try {
-      // API call to save privacy settings
-      console.log('Saving privacy settings:', privacySettings);
+      const responce = await axios.post("/privacy/update", privacySettings);
+      console.log(responce.data);
+      console.log("Saving privacy settings:", privacySettings);
       // await savePrivacySettings(privacySettings);
     } catch (error) {
-      console.error('Error saving privacy settings:', error);
+      console.error("Error saving privacy settings:", error);
     }
   };
 
@@ -78,28 +65,39 @@ const PrivacySettings = () => {
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold text-white mb-2">Privacy & Safety</h2>
-        <p className="text-gray-400">Control who can see your content and interact with you.</p>
+        <p className="text-gray-400">
+          Control who can see your content and interact with you.
+        </p>
       </div>
 
       <div className="bg-black-900 rounded-lg border border-gray-800">
         <div className="p-6">
-          <h3 className="text-lg font-semibold text-white mb-6">Privacy Controls</h3>
-          
+          <h3 className="text-lg font-semibold text-white mb-6">
+            Privacy Controls
+          </h3>
+
           <div className="space-y-6">
             {privacyOptions.map((option) => {
               const Icon = option.icon;
               return (
-                <div key={option.key} className="flex items-start justify-between p-4 bg-black-800 rounded-lg border border-gray-700">
+                <div
+                  key={option.key}
+                  className="flex items-start justify-between p-4 bg-black-800 rounded-lg border border-gray-700"
+                >
                   <div className="flex items-start space-x-4">
                     <div className="p-2 bg-black-700 rounded-lg">
                       <Icon className="h-5 w-5 text-blue-400" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-white mb-1">{option.title}</h4>
-                      <p className="text-sm text-gray-400">{option.description}</p>
+                      <h4 className="font-medium text-white mb-1">
+                        {option.title}
+                      </h4>
+                      <p className="text-sm text-gray-400">
+                        {option.description}
+                      </p>
                     </div>
                   </div>
-                  
+
                   <ToggleSwitch
                     value={option.value}
                     onChange={(value) => handleSettingChange(option.key, value)}
@@ -112,9 +110,11 @@ const PrivacySettings = () => {
 
         {/* Blocked Users Section */}
         <div className="border-t border-gray-800 p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Blocked Users</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">
+            Blocked Users <span className="text-red-500">(COMING SOON)</span>
+          </h3>
           <p className="text-gray-400 mb-4">Manage users you've blocked</p>
-          
+
           <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg border border-gray-700 transition-colors">
             View Blocked Users
           </button>

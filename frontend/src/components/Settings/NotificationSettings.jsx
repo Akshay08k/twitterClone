@@ -1,25 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ToggleSwitch from "./ToggleSwitch";
 import { Heart, Repeat, UserPlus, AtSign, Mail } from "lucide-react";
-
+import axios from "../../contexts/axios";
 
 const NotificationSettings = () => {
   const [notifications, setNotifications] = useState({
-    likes: true,
-    retweets: true,
-    follows: true,
-    mentions: true,
-    directMessages: true,
+    likes: false,
+    retweets: false,
+    follows: false,
+    mentions: false,
+    directMessages: false,
     emailNotifications: false,
-    pushNotifications: true,
-    soundEnabled: true,
   });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get("/notification_preference/fetch");
+        setNotifications(res.data);
+      } catch (err) {
+        console.error("Failed to fetch notification settings:", err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleNotificationChange = (key, value) => {
     setNotifications((prev) => ({
       ...prev,
       [key]: value,
     }));
+  };
+
+  const handleSave = async () => {
+    try {
+      await axios.post("/notification_preference/update", notifications);
+      console.log("Notification settings saved");
+    } catch (err) {
+      console.error("Failed to update notification settings:", err);
+    }
   };
 
   const notificationOptions = [
@@ -43,7 +62,8 @@ const NotificationSettings = () => {
         {
           key: "follows",
           title: "New Followers",
-          description: "When someone starts following you",
+          description:
+            "When someone starts following you or requests to follow",
           icon: UserPlus,
           value: notifications.follows,
         },
@@ -76,16 +96,6 @@ const NotificationSettings = () => {
       ],
     },
   ];
-
-  const handleSave = async () => {
-    try {
-      // API call to save notification settings
-      console.log("Saving notification settings:", notifications);
-      // await saveNotificationSettings(notifications);
-    } catch (error) {
-      console.error("Error saving notification settings:", error);
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -144,7 +154,6 @@ const NotificationSettings = () => {
         </div>
       ))}
 
-      {/* Save Button */}
       <div className="flex justify-end">
         <button
           onClick={handleSave}

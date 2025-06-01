@@ -60,9 +60,13 @@ const AccountSettings = () => {
 
     if (confirmed) {
       try {
-        // API call to delete account
-        console.log("Deleting account...");
-        // await deleteAccount();
+        const responce = await axios.delete("/user/delete-account");
+        if (responce.status == 200) {
+          toast.success("Account deleted successfully we will miss you!!");
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 2000);
+        }
       } catch (error) {
         console.error("Error deleting account:", error);
       }
@@ -77,7 +81,6 @@ const AccountSettings = () => {
         <p className="text-gray-400">Manage your account security and data.</p>
       </div>
 
-      {/* Password Change */}
       <div className="bg-black-900 rounded-lg border border-gray-800 p-6">
         <div className="flex items-center space-x-3 mb-6">
           <Key className="h-6 w-6 text-blue-400" />

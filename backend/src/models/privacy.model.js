@@ -1,0 +1,20 @@
+// models/PrivacySettings.js
+import mongoose from "mongoose";
+
+const privacySettingsSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      unique: true,
+      ref: "User",
+    },
+    privateAccount: { type: Boolean, default: false },
+    allowMentions: { type: Boolean, default: true },
+    showFollowers: { type: Boolean, default: true },
+    allowDirectMessages: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("PrivacySettings", privacySettingsSchema);

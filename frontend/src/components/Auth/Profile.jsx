@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
+
 import axios from "../../contexts/axios";
+import usePostSocketSync from "../../utils/usePostSync.js";
+
 import Navbar from "../Navbar.jsx";
 import EditProfile from "../Popups/EditProfile.jsx";
-
 import Header from "../ProfileComponents/Header.jsx";
 import Banner from "../ProfileComponents/Banner.jsx";
 import ProfileImage from "../ProfileComponents/ProfileImage.jsx";
 import EditButton from "../ProfileComponents/EditButton.jsx";
 import ProfileInfo from "../ProfileComponents/ProfileInfo.jsx";
 import PostsList from "../ProfileComponents/PostsList.jsx";
-import usePostSocketSync from "../../utils/usePostSync.js";
 
 const Profile = () => {
   const [userProfile, setUserProfile] = useState(null);
@@ -41,9 +42,8 @@ const Profile = () => {
             "http://res.cloudinary.com/dbwt5yere/image/upload/v1739381440/f7k5uhjq6nxdimn1tq5s.png",
         });
 
-        // Now fetch posts for this user separately
         const postsResponse = await axios.get(`/posts/user/${userData._id}`);
-        // Add user info inside each post so Post component works fine
+
         const postsWithUser = (postsResponse.data.data || []).map((post) => ({
           ...post,
           user: {
