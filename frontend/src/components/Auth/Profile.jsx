@@ -9,6 +9,7 @@ import ProfileImage from "../ProfileComponents/ProfileImage.jsx";
 import EditButton from "../ProfileComponents/EditButton.jsx";
 import ProfileInfo from "../ProfileComponents/ProfileInfo.jsx";
 import PostsList from "../ProfileComponents/PostsList.jsx";
+import usePostSocketSync from "../../utils/usePostSync.js";
 
 const Profile = () => {
   const [userProfile, setUserProfile] = useState(null);
@@ -53,7 +54,7 @@ const Profile = () => {
             userHandle: userData.userHandle,
           },
         }));
-        
+
         setPosts(postsWithUser);
       } catch (error) {
         console.error(error);
@@ -62,6 +63,16 @@ const Profile = () => {
 
     loadUserProfile();
   }, []);
+  usePostSocketSync({
+    onNewPost: (newPost) => {
+      if (newPost.user._id === userProfile._id) {
+        setPosts((prev) => [newPost, ...prev]);
+      }
+    },
+    onPostDeleted: (deletedId) => {
+      setPosts((prev) => prev.filter((post) => post._id !== deletedId));
+    },
+  });
 
   const handleSaveProfile = (updatedProfile) => {
     setUserProfile(updatedProfile);

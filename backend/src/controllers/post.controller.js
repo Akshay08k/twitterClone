@@ -12,23 +12,43 @@ import { Notification } from "../Models/notification.model.js";
 const createPost = asyncHandler(async (req, res) => {
   const { description } = req.body;
   let postImagesOnlinePath;
+
   if (!description) {
     throw new ApiError(400, "All fields are required");
   }
 
-  if (req.files.postImages) {
-    const postImages = req.files?.postImages[0]?.path;
-    postImagesOnlinePath = await uploadOnCloudinary(postImages);
-  }
+  try {
+    if (req.files?.postImages) {
+      const postImages = req.files.postImages[0].path;
+      postImagesOnlinePath = await uploadOnCloudinary(postImages);
+    }
 
-  const post = await Post.create({
-    description,
-    user: req.user._id,
-    attachements: postImagesOnlinePath,
-  });
-  return res
-    .status(200)
-    .json(new ApiResponce(200, post, "Post Created Successfully"));
+    const post = await Post.create({
+      description,
+      user: req.user._id,
+      attachements: postImagesOnlinePath,
+    });
+
+    const populatedPost = await Post.findById(post._id)
+      .populate("user")
+      .populate("attachements");
+
+    const fullPost = {
+      ...populatedPost.toObject(),
+      comments: [],
+      commentsCount: 0,
+      likesCount: 0,
+      userLiked: false,
+    };
+
+    req.app.io.emit("newPost", fullPost);
+
+    return res
+      .status(200)
+      .json(new ApiResponce(200, fullPost, "Post Created Successfully"));
+  } catch (error) {
+    throw new ApiError(500, "Something went wrong while creating the post");
+  }
 });
 
 const getSinglePost = asyncHandler(async (req, res) => {
@@ -155,7 +175,15 @@ const getPosts = asyncHandler(async (req, res) => {
 
 const deletePost = asyncHandler(async (req, res) => {
   const postId = req.params.postId;
-  await Post.findByIdAndDelete(postId);
+
+  const deletedPost = await Post.findByIdAndDelete(postId);
+
+  if (!deletedPost) {
+    throw new ApiError(404, "Post not found");
+  }
+
+  req.app.io.emit("postDeleted", postId);
+
   return res
     .status(200)
     .json(new ApiResponce(200, {}, "Post Deleted Successfully"));

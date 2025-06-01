@@ -4,6 +4,8 @@ import PostHeader from "./post/PostHeader";
 import PostContent from "./post/PostContent";
 import PostActions from "./post/PostActions";
 import CommentSection from "./CommentSection";
+import { Trash2 } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 
 const Post = ({ post, editable = false }) => {
   const [isLiked, setIsLiked] = useState(post.userLiked);
@@ -29,8 +31,7 @@ const Post = ({ post, editable = false }) => {
   const handleDelete = async () => {
     try {
       await axios.delete(`/posts/${post._id}`);
-      // You can add a callback here to remove post from parent list if needed
-      window.location.reload();
+      toast.success("Post deleted successfully");
     } catch (error) {
       console.error("Error deleting post:", error);
     }
@@ -55,6 +56,7 @@ const Post = ({ post, editable = false }) => {
 
   return (
     <div className="border-gray-800 border-t-4">
+      <Toaster />
       <article className="px-4 pt-3 pb-2 hover:bg-gray-900/50 transition-colors duration-200 cursor-pointer">
         <div className="flex justify-between">
           <div className="flex">
@@ -91,7 +93,7 @@ const Post = ({ post, editable = false }) => {
                 onClick={handleDelete}
                 className="text-sm text-red-500 hover:underline"
               >
-                asdf
+                <Trash2 className="w-5 h-5" />
               </button>
             </div>
           )}
