@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 // Create socket first
 const ioServer = new Server({
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   },
 });
@@ -34,7 +34,7 @@ ioServer.on("connection", (socket) => {
     console.log(`User joined room: ${userId}`);
     socket.join(userId);
   });
-  
+
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
@@ -43,6 +43,6 @@ ioServer.on("connection", (socket) => {
 // Connect to DB and start server
 connectDB().then(() => {
   server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on ${process.env.CORS_ORIGIN}`);
   });
 });
