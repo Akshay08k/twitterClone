@@ -49,13 +49,11 @@ const VisitingProfile = () => {
             "http://res.cloudinary.com/dbwt5yere/image/upload/v1739381440/f7k5uhjq6nxdimn1tq5s.png",
         });
 
-        // Check follow status
         const followRes = await axios.post(
           `/follow/isfollwing/${userData._id}`
         );
         setIsFollowing(followRes.data.data.isFollowing);
 
-        // If private and not following, check for follow request
         if (userData.isPrivate && !followRes.data.isFollowing) {
           const reqStatus = await axios.get(
             `/follow_request/status/${userData._id}`
@@ -65,7 +63,6 @@ const VisitingProfile = () => {
           }
         }
 
-        // Only load posts if not private or already following
         if (!userData.isPrivate || followRes.data.data.isFollowing) {
           const postsRes = await axios.get(`/posts/user/${userData._id}`);
 

@@ -42,7 +42,6 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
     validateField(name, value);
 
-    // Clear server error when user starts typing
     if (errors.server) {
       const newErrors = { ...errors };
       delete newErrors.server;
@@ -53,11 +52,9 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Validate fields before submission
     validateField("email", formData.email);
     validateField("password", formData.password);
 
-    // Check for validation errors
     const hasErrors = Object.values(errors).some(
       (error) => error !== null && error !== undefined
     );
@@ -70,7 +67,6 @@ const Login = () => {
     try {
       const res = await axios.post("/user/login", formData);
 
-      // Show success toast
       toast.success("Successfully signed in! Welcome back.", {
         duration: 2000,
         style: {
@@ -82,7 +78,6 @@ const Login = () => {
       await fetchUser();
       setUser(res.data.user);
 
-      // Small delay to show success message
       setTimeout(() => {
         navigate("/");
       }, 1000);
@@ -102,7 +97,6 @@ const Login = () => {
 
       setErrors({ server: errorMessage });
 
-      // Show error toast
       toast.error(errorMessage, {
         duration: 4000,
       });
@@ -121,7 +115,6 @@ const Login = () => {
       <Toaster position="top-center" />
 
       <div className="w-full max-w-[400px] space-y-8">
-        {/* Logo and Header */}
         <div className="text-center space-y-6">
           <div className="flex justify-center">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
@@ -139,7 +132,6 @@ const Login = () => {
 
         <div className="bg-black border border-gray-800 p-8 rounded-2xl">
           <form onSubmit={handleLogin} className="space-y-6">
-            {/* Email Input */}
             <div>
               <input
                 className={`w-full p-4 bg-black border rounded-lg text-white focus:outline-none focus:ring-2 placeholder-gray-500 transition-colors text-lg ${
@@ -160,7 +152,6 @@ const Login = () => {
               )}
             </div>
 
-            {/* Password Input */}
             <div className="relative">
               <input
                 className={`w-full p-4 bg-black border rounded-lg text-white focus:outline-none focus:ring-2 placeholder-gray-500 transition-colors text-lg pr-12 ${
@@ -222,7 +213,6 @@ const Login = () => {
               )}
             </div>
 
-            {/* Server Error */}
             {errors.server && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                 <div className="flex items-center">
@@ -242,7 +232,6 @@ const Login = () => {
               </div>
             )}
 
-            {/* Remember me and Forgot password */}
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center text-gray-400 cursor-pointer">
                 <input
@@ -259,7 +248,6 @@ const Login = () => {
               </a>
             </div>
 
-            {/* Submit Button */}
             <button
               className={`w-full p-4 rounded-full font-bold text-lg transition-all duration-200 ${
                 loading || !isFormValid
@@ -299,7 +287,6 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Alternative sign in options */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -339,7 +326,6 @@ const Login = () => {
             </button>
           </div>
 
-          {/* Sign up link */}
           <div className="text-center mt-8 pt-6 border-t border-gray-800">
             <p className="text-gray-400 text-sm">
               Don't have an account?{" "}
@@ -353,7 +339,6 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Footer links */}
         <div className="text-center space-y-2">
           <div className="flex justify-center space-x-4 text-xs text-gray-500">
             <a href="/about" className="hover:underline">

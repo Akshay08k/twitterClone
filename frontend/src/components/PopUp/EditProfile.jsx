@@ -28,7 +28,7 @@ function EditProfile({ userProfile, onClose, onSave }) {
     try {
       const endpoint =
         type === "profileImage" ? "/user/avatar" : "/user/bannerImage";
-      const response = await axios.post(endpoint, data); // don't manually set headers
+      const response = await axios.post(endpoint, data);
 
       const imageUrl = response.data.imageUrl;
       setFormData((prev) => ({

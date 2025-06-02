@@ -45,11 +45,6 @@ const Navbar = () => {
                 <HomeIcon />
                 <span>Home</span>
               </NavLink>
-              {/* 
-              <NavLink to="/explore" current={location.pathname === "/explore"}>
-                <ExploreIcon />
-                <span>Explore</span>
-              </NavLink> */}
 
               <NavLink
                 to="/notifications"

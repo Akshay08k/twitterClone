@@ -31,7 +31,7 @@ const CommentSection = ({ postId }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/comment/${postId}/create`,
+        `/comment/${postId}/create`,
         {
           content: newComment,
           postId: postId,

@@ -14,7 +14,6 @@ const MessagingPage = () => {
   const [messages, setMessages] = useState([]);
   const [isMobileView, setIsMobileView] = useState(false);
 
-  // Check screen size for mobile responsiveness
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobileView(window.innerWidth < 768);
@@ -25,7 +24,6 @@ const MessagingPage = () => {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  // Join user room once reduxUser._id is ready
   useEffect(() => {
     if (!reduxUser?._id) return;
 
@@ -36,7 +34,6 @@ const MessagingPage = () => {
     };
   }, [reduxUser?._id]);
 
-  // Listen for incoming messages and update only if belongs to current active chat
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
       if (
@@ -54,7 +51,6 @@ const MessagingPage = () => {
     };
   }, [activeChat]);
 
-  // Fetch chat user info and messages whenever activeChat changes
   useEffect(() => {
     if (!activeChat) {
       setSelectedUser(null);
@@ -85,7 +81,6 @@ const MessagingPage = () => {
     fetchMessages();
   }, [activeChat]);
 
-  // Called when a new message is sent (from MessageInput)
   const handleNewMessage = async (messageData) => {
     try {
       const res = await axios.post("/message/send", messageData);
@@ -100,7 +95,6 @@ const MessagingPage = () => {
     <div className="min-h-screen bg-black text-white mt-16 p-2 sm:p-4">
       <div className="max-w-7xl mx-auto h-[calc(100vh-5rem)] rounded-2xl overflow-hidden bg-black backdrop-blur-xl shadow-2xl">
         <div className="flex h-full">
-          {/* Sidebar */}
           <div
             className={`${
               isMobileView && activeChat ? "hidden" : "flex"
@@ -120,7 +114,6 @@ const MessagingPage = () => {
             </div>
           </div>
 
-          {/* Chat Area */}
           <div
             className={`${
               isMobileView && !activeChat ? "hidden" : "flex"
@@ -128,7 +121,7 @@ const MessagingPage = () => {
           >
             {activeChat && selectedUser ? (
               <>
-                {/* Mobile back button */}
+              
                 {isMobileView && (
                   <button
                     onClick={() => setActiveChat(null)}

@@ -48,7 +48,6 @@ const Sidebar = ({ activeChat, setActiveChat, setSelectedUser }) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Search */}
       <div className="p-4">
         <div className="relative">
           <input
@@ -74,7 +73,6 @@ const Sidebar = ({ activeChat, setActiveChat, setSelectedUser }) => {
         </div>
       </div>
 
-      {/* Chat List */}
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
         {filteredChats.length === 0 ? (
           <div className="p-8 text-center text-gray-500">

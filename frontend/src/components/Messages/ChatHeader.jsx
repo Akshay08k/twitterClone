@@ -20,7 +20,6 @@ const ChatHeader = ({ user }) => {
         </div>
       </div>
 
-      {/* Action buttons */}
       <div className="flex items-center space-x-2">
         <button className="p-2 hover:bg-gray-700/50 rounded-full transition-colors duration-200">
           <svg

@@ -52,7 +52,6 @@ const Register = () => {
         } else {
           delete newErrors.password;
         }
-        // Re-validate confirm password when password changes
         if (formData.confpassword && value !== formData.confpassword) {
           newErrors.confpassword = "Passwords do not match";
         } else if (formData.confpassword && value === formData.confpassword) {
@@ -91,13 +90,11 @@ const Register = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setErrors({ ...errors, avatar: "File size must be less than 5MB" });
         return;
       }
 
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         setErrors({ ...errors, avatar: "Please select an image file" });
         return;
@@ -105,12 +102,10 @@ const Register = () => {
 
       setAvatar(file);
 
-      // FIXED: Properly remove avatar error by deleting the property
       const newErrors = { ...errors };
       delete newErrors.avatar;
       setErrors(newErrors);
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => setAvatarPreview(e.target.result);
       reader.readAsDataURL(file);
@@ -120,12 +115,10 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate all fields
     Object.keys(formData).forEach((key) => {
       validateField(key, formData[key]);
     });
 
-    // FIXED: Check if there are any actual error messages (not null values)
     const hasErrors = Object.values(errors).some(
       (error) => error !== null && error !== undefined
     );
@@ -171,7 +164,6 @@ const Register = () => {
     }
   };
 
-  // FIXED: Better logic for checking if form is valid
   const hasValidationErrors = Object.values(errors).some(
     (error) => error !== null && error !== undefined
   );
@@ -187,7 +179,6 @@ const Register = () => {
     <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8">
       <Toaster />
       <div className="w-full max-w-md">
-        {/* Logo/Header */}
         <div className="text-center mb-8">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-black font-bold text-xl">𝕏</span>
@@ -200,7 +191,6 @@ const Register = () => {
 
         <div className="bg-black border border-gray-800 p-8 rounded-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Avatar Upload */}
             <div className="text-center">
               <div className="relative inline-block">
                 <div className="w-20 h-20 rounded-full bg-gray-800 border-2 border-gray-600 flex items-center justify-center overflow-hidden">
@@ -243,7 +233,6 @@ const Register = () => {
               )}
             </div>
 
-            {/* Username */}
             <div>
               <input
                 className={`w-full p-4 bg-black border rounded-lg text-white focus:outline-none focus:ring-2 placeholder-gray-500 transition-colors ${
@@ -263,7 +252,6 @@ const Register = () => {
               )}
             </div>
 
-            {/* Email */}
             <div>
               <input
                 className={`w-full p-4 bg-black border rounded-lg text-white focus:outline-none focus:ring-2 placeholder-gray-500 transition-colors ${
@@ -283,7 +271,6 @@ const Register = () => {
               )}
             </div>
 
-            {/* Password */}
             <div className="relative">
               <input
                 className={`w-full p-4 bg-black border rounded-lg text-white focus:outline-none focus:ring-2 placeholder-gray-500 transition-colors pr-12 ${
@@ -344,7 +331,6 @@ const Register = () => {
               )}
             </div>
 
-            {/* Confirm Password */}
             <div className="relative">
               <input
                 className={`w-full p-4 bg-black border rounded-lg text-white focus:outline-none focus:ring-2 placeholder-gray-500 transition-colors pr-12 ${
@@ -407,7 +393,6 @@ const Register = () => {
               )}
             </div>
 
-            {/* Birth Date */}
             <div>
               <label className="block text-gray-400 text-sm mb-2">
                 Date of birth
@@ -429,14 +414,12 @@ const Register = () => {
               )}
             </div>
 
-            {/* Submit Error */}
             {errors.submit && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                 <p className="text-red-500 text-sm">{errors.submit}</p>
               </div>
             )}
 
-            {/* FIXED: Better button logic */}
             <button
               className={`w-full p-4 rounded-full font-bold text-lg transition-all duration-200 ${
                 isLoading || !isFormValid
@@ -476,7 +459,6 @@ const Register = () => {
             </button>
           </form>
 
-          {/* Terms */}
           <p className="text-gray-500 text-xs text-center mt-6 leading-relaxed">
             By signing up, you agree to the{" "}
             <a href="/terms" className="text-[#1DA1F2] hover:underline">
@@ -492,7 +474,6 @@ const Register = () => {
             .
           </p>
 
-          {/* Login Link */}
           <div className="text-center mt-8 pt-6 border-t border-gray-800">
             <p className="text-gray-400 text-sm">
               Have an account already?{" "}

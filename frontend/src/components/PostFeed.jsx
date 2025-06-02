@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../contexts/axios";
 import usePostSocketSync from "../utils/usePostSync.js";
-import Posts from "./Posts"; // adjust the path as needed
+import Posts from "./Posts";
 import { useSelector } from "react-redux";
 import socket from "../utils/socket.js";
 const PostList = () => {
@@ -14,7 +14,7 @@ const PostList = () => {
       try {
         const response = await axios.get("/posts");
         if (response.status === 200) {
-          setPosts(response.data.data); // Adjust depending on actual structure
+          setPosts(response.data.data);
         } else {
           console.error("Unexpected response:", response);
         }

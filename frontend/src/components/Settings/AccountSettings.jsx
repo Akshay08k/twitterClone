@@ -40,7 +40,6 @@ const AccountSettings = () => {
       } else {
         toast.error("Old Password is incorrect");
       }
-      // await changePassword(passwordData);
       setPasswordData({
         currentPassword: "",
         newPassword: "",

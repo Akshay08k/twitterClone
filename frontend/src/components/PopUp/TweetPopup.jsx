@@ -186,7 +186,6 @@ const TweetPopup = ({ isOpen, onClose }) => {
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Character Count with Progress Circle */}
               {charCount > 0 && (
                 <div className="relative flex items-center">
                   <svg

@@ -10,7 +10,6 @@ const ChatMessages = ({ activeChat }) => {
   const reduxUser = useSelector((state) => state.user);
   const myId = reduxUser._id;
 
-  // Fetch messages when activeChat changes
   useEffect(() => {
     const fetchMessages = async () => {
       setIsLoading(true);
@@ -29,7 +28,6 @@ const ChatMessages = ({ activeChat }) => {
     }
   }, [activeChat]);
 
-  // Listen to incoming socket messages
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
       if (
