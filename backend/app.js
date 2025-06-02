@@ -10,10 +10,9 @@ import notificationRoute from "./src/routes/notification.route.js";
 import FollowRequestRoute from "./src/routes/followrequest.route.js";
 import PrivacyRoute from "./src/routes/privacy.route.js";
 import NotificationPreferenceRoute from "./src/routes/notificationPreference.route.js";
-
+import MessageRouter from "./src/routes/messages.route.js";
 export function createApp(ioServer) {
   const app = express();
-
   app.use(
     cors({
       origin: "http://localhost:5173",
@@ -41,6 +40,7 @@ export function createApp(ioServer) {
   app.use("/follow_request", FollowRequestRoute);
   app.use("/privacy", PrivacyRoute);
   app.use("/notification_preference", NotificationPreferenceRoute);
+  app.use("/message", MessageRouter);
 
   return app;
 }

@@ -23,6 +23,7 @@ import ProfileVisiting from "./components/ProfileVisiting";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Settings from "./components/Settings/SettingsPage";
 import NotificationPage from "./components/Notification/Notification";
+import MessagingPage from "./components/Messages/Message";
 const App = () => {
   return (
     <Provider store={store}>
@@ -35,6 +36,7 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="explore" element={<ExploreTab />} />
               <Route path="updates" element={<ProfileUpdate />} />
+              <Route path="/messages" element={<MessagingPage />} />
               <Route path="posts/:id" element={<SinglePost />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="logout" element={<Logout />} />

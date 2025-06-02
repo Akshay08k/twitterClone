@@ -87,7 +87,7 @@ const Profile = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-black text-white mt-16">
-        <Header username={userProfile.username} tweets={posts.length} />
+        <Header username={userProfile.username} tweetsCount={posts.length} />
         <main className="max-w-screen-md mx-auto">
           <Banner bannerImage={userProfile.bannerImage} />
           <div className="px-4">

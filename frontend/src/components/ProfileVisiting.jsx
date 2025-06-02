@@ -53,7 +53,6 @@ const VisitingProfile = () => {
         const followRes = await axios.post(
           `/follow/isfollwing/${userData._id}`
         );
-
         setIsFollowing(followRes.data.data.isFollowing);
 
         // If private and not following, check for follow request
@@ -61,7 +60,6 @@ const VisitingProfile = () => {
           const reqStatus = await axios.get(
             `/follow_request/status/${userData._id}`
           );
-          console.log("req sstatus", reqStatus);
           if (reqStatus.data.status === "pending") {
             setRequestSent(true);
           }

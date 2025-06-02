@@ -22,8 +22,8 @@ const createFollower = asyncHandler(async (req, res) => {
   if (alreadyFollowing) throw new ApiError(400, "Already following");
 
   const newFollower = await Follower.create({
-    user: req.user._id,
-    follower: userId,
+    user: userId,
+    follower: req.user._id,
   });
 
   const existingNotification = await Notification.findOne({
@@ -108,12 +108,13 @@ const getFollowing = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponce(200, following, "Following Fetched Successfully"));
 });
+
 const isFollowing = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   const follower = await Follower.findOne({
-    user: userId,
     follower: req.user._id,
+    user: userId,
   });
 
   const isFollowing = !!follower; // Convert to boolean

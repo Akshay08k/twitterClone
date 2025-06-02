@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ToggleSwitch from "./ToggleSwitch";
 import { Heart, Repeat, UserPlus, AtSign, Mail } from "lucide-react";
 import axios from "../../contexts/axios";
+import toast, { Toaster } from "react-hot-toast";
 
 const NotificationSettings = () => {
   const [notifications, setNotifications] = useState({
@@ -34,8 +35,15 @@ const NotificationSettings = () => {
 
   const handleSave = async () => {
     try {
-      await axios.post("/notification_preference/update", notifications);
-      console.log("Notification settings saved");
+      const responce = await axios.post(
+        "/notification_preference/update",
+        notifications
+      );
+      if (responce.status == 200) {
+        toast.success("Notification settings updated successfully");
+      } else {
+        toast.error("Failed to update notification settings");
+      }
     } catch (err) {
       console.error("Failed to update notification settings:", err);
     }
@@ -99,6 +107,7 @@ const NotificationSettings = () => {
 
   return (
     <div className="space-y-8">
+      <Toaster />
       <div>
         <h2 className="text-2xl font-bold text-white mb-2">
           Notification Settings

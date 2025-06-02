@@ -47,7 +47,6 @@ const TweetPopup = ({ isOpen, onClose }) => {
     try {
       const response = await axios.post("/posts/create", formData);
       if (response.status === 200) {
-        console.log(response.data);
         setTweet("");
         setSelectedImage(null);
         setImagePreview("");

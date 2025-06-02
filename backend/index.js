@@ -30,6 +30,11 @@ ioServer.attach(server);
 ioServer.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
+  socket.on("joinRooms", (userId) => {
+    console.log(`User joined room: ${userId}`);
+    socket.join(userId);
+  });
+  
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });

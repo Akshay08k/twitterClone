@@ -12,6 +12,7 @@ import {
 } from "../utils/index.js";
 import bcrypt from "bcrypt";
 import generateUserHandle from "../utils/GenerateUserHandle.js";
+import { PrivacySettings } from "../Models/privacy.model.js";
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const token = req.cookies.refreshToken;
@@ -251,14 +252,14 @@ const getUserByUsername = asyncHandler(async (req, res) => {
   }
 
   const isCurrentUser = req.user._id.toString() === user._id.toString();
-
+  const isPrivateAccount = await PrivacySettings.findOne({ userId: user._id });
   // Check if requester is a follower
   const isFollower = await Follower.exists({
     user: user._id,
     follower: req.user._id,
   });
 
-  const isPrivate = user.isPrivateAccount;
+  const isPrivate = isPrivateAccount.privateAccount || false;
   const isRestricted = isPrivate && !isFollower && !isCurrentUser;
 
   const [userFollowers, userFollowing] = await Promise.all([
@@ -272,7 +273,7 @@ const getUserByUsername = asyncHandler(async (req, res) => {
     userHandle: user.userHandle,
     avatar: user.avatar,
     bannerImage: user.bannerImage,
-    isPrivate: user.isPrivateAccount,
+    isPrivate: isPrivateAccount.privateAccount,
   };
 
   if (isRestricted) {

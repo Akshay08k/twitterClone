@@ -4,12 +4,14 @@ import FollowRequest from "../Models/followRequest.mode.js";
 import { Follower } from "../Models/follower.model.js";
 import User from "../Models/user.model.js";
 import { Notification } from "../Models/notification.model.js";
+import { PrivacySettings } from "../Models/privacy.model.js";
 
 const sendFollowRequest = asyncHandler(async (req, res) => {
   const toUserId = req.params.id;
   const fromUserId = req.user._id;
 
   const toUser = await User.findById(toUserId);
+  const isPrivateAccount = await PrivacySettings.findOne({ userId: toUserId });
   if (!toUser) throw new Error("User not found");
 
   const isAlreadyFollowing = await Follower.findOne({
@@ -26,11 +28,10 @@ const sendFollowRequest = asyncHandler(async (req, res) => {
   if (existingRequest)
     return res.status(400).json({ message: "Request already sent" });
 
-  if (toUser.isPrivateAccount) {
+  if (isPrivateAccount.privateAccount) {
     await FollowRequest.create({ from: fromUserId, to: toUserId });
     return res.status(200).json({ requestSent: true });
   } else {
-    // Directly follow if not private
     await Follower.create({ user: toUserId, follower: fromUserId });
     return res.status(200).json({ followed: true });
   }

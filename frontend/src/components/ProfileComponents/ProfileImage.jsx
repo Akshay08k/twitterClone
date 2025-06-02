@@ -3,7 +3,7 @@ const ProfileImage = ({ profileImage }) => (
     <img
       src={profileImage}
       alt="Profile"
-      className="w-32 h-32 rounded-full border-4 border-black aspect-square object-cover"
+      className="w-32 h-32 rounded-full border-black aspect-square object-cover"
     />
   </div>
 );

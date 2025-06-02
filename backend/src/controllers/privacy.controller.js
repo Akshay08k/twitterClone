@@ -1,5 +1,5 @@
 // controllers/privacyController.js
-import PrivacySettings from "../models/privacy.model.js";
+import { PrivacySettings } from "../Models/privacy.model.js";
 
 export const getPrivacySettings = async (req, res) => {
   const userId = req.user.id;
@@ -15,7 +15,6 @@ export const getPrivacySettings = async (req, res) => {
 };
 
 export const updatePrivacySettings = async (req, res) => {
-  console.log(req.user.id);
   const userId = req.user.id;
   const updatedSettings = req.body;
   try {

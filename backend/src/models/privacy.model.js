@@ -17,4 +17,7 @@ const privacySettingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("PrivacySettings", privacySettingsSchema);
+export const PrivacySettings = mongoose.model(
+  "PrivacySettings",
+  privacySettingsSchema
+);

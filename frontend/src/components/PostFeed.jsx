@@ -13,7 +13,6 @@ const PostList = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get("/posts");
-        console.log(response.data.data);
         if (response.status === 200) {
           setPosts(response.data.data); // Adjust depending on actual structure
         } else {

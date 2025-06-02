@@ -1,15 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ToggleSwitch from "./ToggleSwitch";
 import axios from "../../contexts/axios";
 import { Shield, Eye, Users, MessageSquare } from "lucide-react";
-
+import toast, { Toaster } from "react-hot-toast";
 const PrivacySettings = () => {
-  const [privacySettings, setPrivacySettings] = useState({
-    privateAccount: false,
-    allowMentions: true,
-    showFollowers: true,
-    allowDirectMessages: true,
-  });
+  const [privacySettings, setPrivacySettings] = useState({});
 
   const handleSettingChange = (key, value) => {
     setPrivacySettings((prev) => ({
@@ -17,6 +12,18 @@ const PrivacySettings = () => {
       [key]: value,
     }));
   };
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get("/privacy/fetch");
+        setPrivacySettings(res.data);
+      } catch (err) {
+        console.error("Failed to fetch privacy settings:", err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const privacyOptions = [
     {
@@ -53,9 +60,11 @@ const PrivacySettings = () => {
   const handleSave = async () => {
     try {
       const responce = await axios.post("/privacy/update", privacySettings);
-      console.log(responce.data);
-      console.log("Saving privacy settings:", privacySettings);
-      // await savePrivacySettings(privacySettings);
+      if (responce.status == 200) {
+        toast.success("Privacy settings updated successfully");
+      } else {
+        toast.error("Failed to update privacy settings");
+      }
     } catch (error) {
       console.error("Error saving privacy settings:", error);
     }
@@ -63,6 +72,7 @@ const PrivacySettings = () => {
 
   return (
     <div className="space-y-8">
+      <Toaster />
       <div>
         <h2 className="text-2xl font-bold text-white mb-2">Privacy & Safety</h2>
         <p className="text-gray-400">

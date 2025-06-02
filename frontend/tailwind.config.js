@@ -4,6 +4,9 @@ export default {
   darkMode: "class",
   theme: {
     extend: {
+      colors: {
+        "twitter-blue": "#1d9bf0",
+      },
       fontFamily: {
         Inter: ["Inter", "sans-serif"],
       },

@@ -174,7 +174,6 @@ const NotificationPage = () => {
         </div>
       </div>
 
-      {console.log(notifications)}
       {/* Notifications List */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="space-y-2">
