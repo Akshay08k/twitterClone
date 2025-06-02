@@ -1,4 +1,4 @@
-import NotificationPreference from "../Models/notificationPreference.model.js";
+import NotificationPreference from "../models/notificationPreference.model.js";
 
 export const getNotificationSettings = async (req, res) => {
   const userId = req.user.id;

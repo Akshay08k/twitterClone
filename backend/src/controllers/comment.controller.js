@@ -1,8 +1,8 @@
 import { asyncHandler, ApiError, ApiResponce } from "../utils/index.js";
-import User from "../Models/user.model.js";
+import User from "../models/user.model.js";
 import { Comment } from "../models/comments.model.js";
-import { Notification } from "../Models/notification.model.js";
-import Post from "../Models/post.model.js";
+import { Notification } from "../models/notification.model.js";
+import Post from "../models/post.model.js";
 const getComments = asyncHandler(async (req, res) => {
   const postId = req.params.postId;
 
@@ -69,7 +69,6 @@ const createComment = asyncHandler(async (req, res) => {
     }
 
     receiverUserId = post.user._id;
-    
 
     if (receiverUserId.toString() !== user._id.toString()) {
       notificationContent = `${user.username} commented on your post`;

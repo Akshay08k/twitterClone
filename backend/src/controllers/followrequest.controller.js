@@ -1,10 +1,10 @@
 // followController.js
 import { asyncHandler } from "../utils/index.js";
-import FollowRequest from "../Models/followRequest.mode.js";
-import { Follower } from "../Models/follower.model.js";
-import User from "../Models/user.model.js";
-import { Notification } from "../Models/notification.model.js";
-import { PrivacySettings } from "../Models/privacy.model.js";
+import FollowRequest from "../models/followRequest.mode.js";
+import { Follower } from "../models/follower.model.js";
+import User from "../models/user.model.js";
+import { Notification } from "../models/notification.model.js";
+import { PrivacySettings } from "../models/privacy.model.js";
 
 const sendFollowRequest = asyncHandler(async (req, res) => {
   const toUserId = req.params.id;

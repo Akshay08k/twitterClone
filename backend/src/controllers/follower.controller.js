@@ -4,8 +4,8 @@ import {
   uploadOnCloudinary,
   asyncHandler,
 } from "../utils/index.js";
-import { Follower } from "../Models/follower.model.js";
-import { Notification } from "../Models/notification.model.js";
+import { Follower } from "../models/follower.model.js";
+import { Notification } from "../models/notification.model.js";
 
 const createFollower = asyncHandler(async (req, res) => {
   const { userId } = req.params;
