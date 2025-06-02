@@ -12,7 +12,6 @@ pids
 *.pid
 *.seed  
 
-.env
 node_modules
 dist
 dist-ssr
