@@ -32,7 +32,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       .cookie("accessToken", newAccessToken, {
         httpOnly: true,
         secure: false,
-        sameSite: "Lax",
+        sameSite: "None",
         maxAge: 15 * 60 * 1000,
       })
       .json({ token: newAccessToken });
@@ -165,13 +165,13 @@ const login = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: false,
-      sameSite: "Lax",
+      sameSite: "None",
       maxAge: 15 * 60 * 1000, // 15 minutes
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: false,
-      sameSite: "Lax",
+      sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     })
     .status(200)
