@@ -5,7 +5,7 @@ import {
   MessageIcon,
   NotificationIcon,
 } from "../components/Icons/Icons.jsx";
-import TweetPopup from "./Popups/TweetPopup.jsx";
+import TweetPopup from "./PopUp/TweetPopup.js";
 import { useSelector } from "react-redux";
 
 const Navbar = () => {

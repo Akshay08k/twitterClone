@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import User from "../Models/user.model.js";
 import Post from "../Models/post.model.js";
-import { Comment } from "../models/comments.model.js";
-import { PostLikes } from "../Models/postlikes.model.js";
+import NotificationPreference from "../Models/notificationPreference.model.js";
+import { PrivacySettings } from "../Models/privacy.model.js";
 import { Follower } from "../Models/follower.model.js";
 import {
   ApiError,
@@ -12,7 +12,6 @@ import {
 } from "../utils/index.js";
 import bcrypt from "bcrypt";
 import generateUserHandle from "../utils/GenerateUserHandle.js";
-import { PrivacySettings } from "../Models/privacy.model.js";
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const token = req.cookies.refreshToken;
@@ -105,6 +104,23 @@ const registerUser = asyncHandler(async (req, res) => {
     avatar: avatarOnlinePath,
     birthdate,
     userHandle: await generateUserHandle(),
+  });
+
+  await NotificationPreference.create({
+    userId: user._id,
+    likes: false,
+    retweets: false,
+    follows: false,
+    mentions: false,
+    directMessages: false,
+    emailNotifications: false,
+  });
+  await PrivacySettings.create({
+    userId: user._id,
+    privateAccount: false,
+    allowDirectMessages: false,
+    allowMentions: true,
+    showFollowers: true,
   });
 
   const createdUser = await User.findById(user._id).select("-password");

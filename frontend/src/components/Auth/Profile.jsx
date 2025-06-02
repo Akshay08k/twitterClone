@@ -4,7 +4,7 @@ import axios from "../../contexts/axios";
 import usePostSocketSync from "../../utils/usePostSync.js";
 
 import Navbar from "../Navbar.jsx";
-import EditProfile from "../Popups/EditProfile.jsx";
+import EditProfile from "../PopUp/EditProfile.jsx";
 import Header from "../ProfileComponents/Header.jsx";
 import Banner from "../ProfileComponents/Banner.jsx";
 import ProfileImage from "../ProfileComponents/ProfileImage.jsx";
