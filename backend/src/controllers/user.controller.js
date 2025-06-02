@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../Models/user.model.js";
-import Post from "../Models/post.model.js";
+import userModel from "../Models/user.model.js";
 import NotificationPreference from "../Models/notificationPreference.model.js";
 import { PrivacySettings } from "../Models/privacy.model.js";
 import { Follower } from "../Models/follower.model.js";
@@ -19,7 +18,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
-    const user = await User.findById(decoded.userId);
+    const user = await userModel.findById(decoded.userId);
     if (!user || user.refreshToken !== token)
       throw new ApiError(403, "Invalid refresh token");
 
@@ -44,9 +43,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 // ME
 const me = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select(
-    "-passwordHash -refreshToken -is_admin -password"
-  );
+  const user = await userModel
+    .findById(req.user._id)
+    .select("-passwordHash -refreshToken -is_admin -password");
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -80,7 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  let existedUser = await User.findOne({ $or: [{ username, email }] });
+  let existedUser = await userModel.findOne({ $or: [{ username, email }] });
   if (existedUser) {
     throw new ApiError(401, "User already exists");
   }
@@ -97,7 +96,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const avatarOnlinePath = await uploadOnCloudinary(avatarLocalPath);
 
-  const user = await User.create({
+  const user = await userModel.create({
     username: username.toLowerCase(),
     email,
     password,
@@ -123,7 +122,7 @@ const registerUser = asyncHandler(async (req, res) => {
     showFollowers: true,
   });
 
-  const createdUser = await User.findById(user._id).select("-password");
+  const createdUser = await userModel.findById(user._id).select("-password");
   if (!createdUser) {
     throw new ApiError(500, "Something Went Wrong While Creating User");
   }
@@ -135,7 +134,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await userModel.findOne({ email });
   if (!user) throw new ApiError(401, "Invalid credentials");
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -182,7 +181,7 @@ const login = asyncHandler(async (req, res) => {
 const updatePassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
-  const user = await User.findById(req.user._id);
+  const user = await userModel.findById(req.user._id);
   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
 
   if (!isPasswordCorrect) {
@@ -209,17 +208,19 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something Went Wrong While Uploading Avatar");
   }
 
-  const user = await User.findByIdAndUpdate(
-    req.user?.id,
-    {
-      $set: {
-        avatar: avatarOnlinePath,
+  const user = await userModel
+    .findByIdAndUpdate(
+      req.user?.id,
+      {
+        $set: {
+          avatar: avatarOnlinePath,
+        },
       },
-    },
-    {
-      new: true,
-    }
-  ).select("-password -is_admin");
+      {
+        new: true,
+      }
+    )
+    .select("-password -is_admin");
 
   return res
     .status(200)
@@ -233,21 +234,23 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $set: {
-        username: username.toLowerCase(),
-        bio: bio,
-        location: location,
-        website: websiteLink,
-        userHandle: userHandle.toLowerCase(),
+  const user = await userModel
+    .findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          username: username.toLowerCase(),
+          bio: bio,
+          location: location,
+          website: websiteLink,
+          userHandle: userHandle.toLowerCase(),
+        },
       },
-    },
-    {
-      new: true,
-    }
-  ).select("-password -is_admin -avatar -bannerImage -email");
+      {
+        new: true,
+      }
+    )
+    .select("-password -is_admin -avatar -bannerImage -email");
 
   return res
     .status(200)
@@ -258,9 +261,9 @@ const getUserByUsername = asyncHandler(async (req, res) => {
   const { username } = req.params;
 
   // Find user by username and exclude sensitive fields
-  const user = await User.findOne({ username }).select(
-    "-passwordHash -refreshToken -is_admin -password -email"
-  );
+  const user = await userModel
+    .findOne({ username })
+    .select("-passwordHash -refreshToken -is_admin -password -email");
 
   if (!user) {
     res.status(404);
@@ -338,17 +341,19 @@ const updateBannerImage = asyncHandler(async (req, res) => {
     );
   }
 
-  const user = await User.findByIdAndUpdate(
-    req.user?.id,
-    {
-      $set: {
-        bannerImage: bannerOnlinePath,
+  const user = await userModel
+    .findByIdAndUpdate(
+      req.user?.id,
+      {
+        $set: {
+          bannerImage: bannerOnlinePath,
+        },
       },
-    },
-    {
-      new: true,
-    }
-  ).select("-password -is_admin");
+      {
+        new: true,
+      }
+    )
+    .select("-password -is_admin");
 
   return res
     .status(200)
@@ -356,7 +361,7 @@ const updateBannerImage = asyncHandler(async (req, res) => {
 });
 
 const deleteAccount = asyncHandler(async (req, res) => {
-  const user = await User.findByIdAndDelete(req.user?._id);
+  const user = await userModel.findByIdAndDelete(req.user?._id);
   return res
     .status(200)
     .json(new ApiResponce(200, user, "Account Deleted Successfully"));
