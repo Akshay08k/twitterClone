@@ -155,7 +155,7 @@ const getPosts = asyncHandler(async (req, res) => {
       const userLiked = await PostLikes.exists({
         post: post._id,
         user: userId,
-      });
+      }).select("-password -is_admin -email -refreshToken -passwordHash -isPrivateAccount");
 
       return {
         ...post.toObject(),
