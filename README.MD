@@ -1,3 +1,113 @@
+## 🐦 Twitter Clone – Version 1
+
+A simple, functional Twitter clone built using modern web technologies. This version focuses on core social media features such as user authentication, tweet creation, and interaction.
+
+---
+
+### 🚀 Features (v1)
+
+- **User Authentication**
+
+  - Sign up, log in, and log out
+  - JWT or session-based authentication
+
+- **Create & Manage Tweets**
+
+  - Post new tweets (text)
+  - Delete own tweets
+
+- **Like System**
+
+  - Like and unlike tweets
+
+- **Follow System**
+
+  - Follow and unfollow other users
+  - View posts only from followed users in the home feed
+
+- **User Profile**
+
+  - View user profile with tweet history
+  - Profile bio and picture support (if available)
+
+- **Basic Feed**
+
+  - Reverse chronological feed of tweets from followed users
+
+---
+
+### 🛠️ Tech Stack
+
+> Replace these with your actual tech stack
+
+- **Frontend:** React.js / Next.js / Tailwind CSS
+- **Backend:** Node.js / Express.js
+- **Database:** MongoDB / PostgreSQL / Firebase
+- **Authentication:** JWT / OAuth / Sessions
+- **Deployment:** Vercel / Heroku / Render / Railway
+
+---
+
+### 📁 Folder Structure (Example)
+
+```
+/client        # Frontend
+/server        # Backend (API)
+.env           # Environment config (excluded from version control)
+README.md
+```
+
+---
+
+### 🔧 Getting Started
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-username/twitter-clone.git
+   cd twitter-clone
+   ```
+
+2. **Install dependencies**
+
+   - Frontend:
+
+     ```bash
+     cd client
+     npm install
+     ```
+
+   - Backend:
+
+     ```bash
+     cd server
+     npm install
+     ```
+
+3. **Environment setup**
+
+   - Create a `.env` file in both frontend and backend folders
+   - Add relevant API keys, DB URIs, JWT secrets, etc.
+
+4. **Run the app**
+
+   ```bash
+   # Run frontend
+   cd client
+   npm start
+
+   # Run backend
+   cd server
+   npm run dev
+   ```
+
+---
+
+### 📌 Notes
+
+- This is **Version 1** of the project. The goal was to establish a minimal working social media experience.
+- [Version 2 Roadmap](./docs/v2-roadmap.md) includes features like retweets, bookmarks, 2FA, and analytics.
+
 # Twitter Clone - Version 2 Roadmap
 
 This document outlines the planned features and enhancements for Version 2 (v2) of the Twitter Clone project.
