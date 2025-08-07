@@ -1,4 +1,3 @@
-// controllers/privacyController.js
 import { PrivacySettings } from "../models/privacy.model.js";
 
 export const getPrivacySettings = async (req, res) => {

@@ -118,7 +118,6 @@ const PrivacySettings = () => {
           </div>
         </div>
 
-        {/* Blocked Users Section */}
         <div className="border-t border-gray-800 p-6">
           <h3 className="text-lg font-semibold text-white mb-4">
             Blocked Users <span className="text-red-500">(COMING SOON)</span>
@@ -131,7 +130,6 @@ const PrivacySettings = () => {
         </div>
       </div>
 
-      {/* Save Button */}
       <div className="flex justify-end">
         <button
           onClick={handleSave}

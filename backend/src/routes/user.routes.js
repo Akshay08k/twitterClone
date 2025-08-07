@@ -29,7 +29,6 @@ router.route("/register").post(
 
 router.route("/login").post(login);
 
-//secured routes
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/validateToken").post(validateToken);
 router

@@ -1,7 +1,7 @@
 import axios from "../../contexts/axios";
 import { useState } from "react";
 
-function EditProfile({ userProfile, onClose, onSave }) {
+function EditProfile({ userProfile, onClose }) {
   const [formData, setFormData] = useState({
     username: userProfile.username,
     bio: userProfile.bio,

@@ -1,7 +1,6 @@
-import { Messages } from "../models/messages.model.js";
+import Messages from "../Models/messages.model.js";
 import User from "../models/user.model.js";
 import { Follower } from "../models/follower.model.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
 // Get conversations for a user
 export const getConversations = async (req, res) => {
   try {

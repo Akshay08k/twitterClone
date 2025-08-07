@@ -25,7 +25,7 @@ export function createApp(ioServer) {
   app.use(express.static("public"));
   app.use(cookieParser());
 
-  // Attach io instance to every request
+  //Attaching io to req just like req.user
   app.use((req, res, next) => {
     req.app.io = ioServer;
     next();

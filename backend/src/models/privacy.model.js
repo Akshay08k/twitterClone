@@ -1,4 +1,3 @@
-// models/PrivacySettings.js
 import mongoose from "mongoose";
 
 const privacySettingsSchema = new mongoose.Schema(

@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         syncUser(res.data.user);
       } else {
         setUser(null);
-        dispatch(setReduxUser({})); // clear redux state
+        dispatch(setReduxUser({}));
       }
     } catch (error) {
       if (error.response?.status === 401) {

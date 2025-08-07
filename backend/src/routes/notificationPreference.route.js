@@ -1,4 +1,3 @@
-// routes/notificationRoutes.js
 import { Router } from "express";
 import {
   getNotificationSettings,

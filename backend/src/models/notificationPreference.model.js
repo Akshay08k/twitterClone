@@ -1,4 +1,3 @@
-// models/NotificationSettings.js
 import mongoose from "mongoose";
 
 const notificationSettingsSchema = new mongoose.Schema(

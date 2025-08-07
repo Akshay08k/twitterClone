@@ -20,7 +20,7 @@ import ExploreTab from "./components/Trending/ExploreTab";
 import SinglePost from "./components/SinglePost";
 import Profile from "./components/Auth/Profile";
 import ProfileVisiting from "./components/ProfileVisiting";
-import ErrorBoundary from "./components/ErrorBoundary";
+import NotFound from "./components/NotFound";
 import Settings from "./components/Settings/SettingsPage";
 import NotificationPage from "./components/Notification/Notification";
 import MessagingPage from "./components/Messages/Message";
@@ -43,7 +43,7 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<NotificationPage />} />
               <Route path="/profile/:username" element={<ProfileVisiting />} />
-              <Route path="*" element={<ErrorBoundary />} />
+              <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </Router>

@@ -1,4 +1,3 @@
-// followController.js
 import { asyncHandler } from "../utils/index.js";
 import FollowRequest from "../models/followRequest.mode.js";
 import { Follower } from "../models/follower.model.js";
@@ -67,10 +66,9 @@ const withdrawFollowRequest = asyncHandler(async (req, res) => {
 
 const acceptFollowRequest = async (req, res) => {
   try {
-    const toUserId = req.user.id; // Logged-in user accepting the request
-    const { fromUserId } = req.params; // User who sent the request
+    const toUserId = req.user.id;
+    const { fromUserId } = req.params;
 
-    // Step 1: Find the follow request
     const request = await FollowRequest.findOne({
       from: fromUserId,
       to: toUserId,
@@ -81,18 +79,14 @@ const acceptFollowRequest = async (req, res) => {
       return res.status(404).json({ message: "Follow request not found" });
     }
 
-    // Step 2: Create a follower relationship
     await Follower.create({ user: toUserId, follower: fromUserId });
 
-    // Step 3: Update the follow request status to accepted
     await FollowRequest.findByIdAndUpdate(request._id, { status: "accepted" });
 
-    // Step 4: Fetch user info (optional: to personalize notifications)
     const fromUser = await User.findById(fromUserId).select(
       "username userHandle"
     );
 
-    // Step 5: Create a notification for the requester (they sent the request)
     await Notification.create({
       type: "follow",
       sourceUserId: toUserId,
@@ -102,7 +96,6 @@ const acceptFollowRequest = async (req, res) => {
       content: `${req.user.username} accepted your follow request`,
     });
 
-    // Step 6: Create a notification for the accepter (you)
     await Notification.create({
       type: "follow",
       sourceUserId: fromUserId,
@@ -121,8 +114,8 @@ const acceptFollowRequest = async (req, res) => {
 
 const deleteFollowRequest = async (req, res) => {
   try {
-    const toUserId = req.user.id; // logged in user rejecting request
-    const { fromUserId } = req.params; // user who sent the request
+    const toUserId = req.user.id;
+    const { fromUserId } = req.params;
 
     const request = await FollowRequest.findOne({
       from: fromUserId,
@@ -147,7 +140,7 @@ const getPendingFollowRequests = async (req, res) => {
     const toUserId = req.user.id;
 
     const requests = await FollowRequest.find({ to: toUserId })
-      .populate("from", "username userHandle avatar") // Get user info
+      .populate("from", "username userHandle avatar")
       .sort({ createdAt: -1 });
 
     return res.status(200).json(requests);

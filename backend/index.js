@@ -1,4 +1,3 @@
-// index.js (or server.js)
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
@@ -9,7 +8,6 @@ dotenv.config({ path: "./.env" });
 
 const PORT = process.env.PORT || 5000;
 
-// Create socket first
 const ioServer = new Server({
   cors: {
     origin: process.env.CORS_ORIGIN,
@@ -17,16 +15,12 @@ const ioServer = new Server({
   },
 });
 
-// Create express app with io
 const app = createApp(ioServer);
 
-// Now attach express app to HTTP server
 const server = http.createServer(app);
 
-// Attach io to that HTTP server
 ioServer.attach(server);
 
-// Socket.io listeners
 ioServer.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
@@ -40,9 +34,8 @@ ioServer.on("connection", (socket) => {
   });
 });
 
-// Connect to DB and start server
 connectDB().then(() => {
   server.listen(PORT, () => {
-    console.log(`🚀 Server running on ${process.env.CORS_ORIGIN}`);
+    console.log(` Server running on ${process.env.CORS_ORIGIN}`);
   });
 });

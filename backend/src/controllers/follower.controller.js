@@ -1,9 +1,4 @@
-import {
-  ApiError,
-  ApiResponce,
-  uploadOnCloudinary,
-  asyncHandler,
-} from "../utils/index.js";
+import { ApiError, ApiResponce, asyncHandler } from "../utils/index.js";
 import { Follower } from "../models/follower.model.js";
 import { Notification } from "../models/notification.model.js";
 
@@ -64,6 +59,7 @@ const getFollowers = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponce(200, followers, "Followers Fetched Successfully"));
 });
+
 const deleteFollower = asyncHandler(async (req, res) => {
   const { followerId } = req.params;
 
@@ -117,7 +113,7 @@ const isFollowing = asyncHandler(async (req, res) => {
     user: userId,
   });
 
-  const isFollowing = !!follower; // Convert to boolean
+  const isFollowing = !!follower;
   return res.status(200).json(
     new ApiResponce(
       200,
