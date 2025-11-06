@@ -43,9 +43,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 // ME
 const me = asyncHandler(async (req, res) => {
-  const user = await User
-    .findById(req.user._id)
-    .select("-passwordHash -refreshToken -is_admin -password");
+  const user = await User.findById(req.user._id).select(
+    "-passwordHash -refreshToken -is_admin -password"
+  );
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -84,17 +84,20 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "User already exists");
   }
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
+  let avatarOnlinePath = null;
+  if (req.files?.avatar?.length > 1) {
+    let avatarLocalPath = req.files?.avatar[0]?.path;
 
-  if (!avatarLocalPath) {
-    throw new ApiError(
-      500,
-      "Something Went Wrong While Uploading Avatar  " +
-        req.files?.avatar[0].path
-    );
+    if (!avatarLocalPath) {
+      throw new ApiError(
+        500,
+        "Something Went Wrong While Uploading Avatar  " +
+          req.files?.avatar[0].path
+      );
+    }
+
+    avatarOnlinePath = await uploadOnCloudinary(avatarLocalPath);
   }
-
-  const avatarOnlinePath = await uploadOnCloudinary(avatarLocalPath);
 
   const user = await User.create({
     username: username.toLowerCase(),
@@ -208,19 +211,17 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something Went Wrong While Uploading Avatar");
   }
 
-  const user = await User
-    .findByIdAndUpdate(
-      req.user?.id,
-      {
-        $set: {
-          avatar: avatarOnlinePath,
-        },
+  const user = await User.findByIdAndUpdate(
+    req.user?.id,
+    {
+      $set: {
+        avatar: avatarOnlinePath,
       },
-      {
-        new: true,
-      }
-    )
-    .select("-password -is_admin");
+    },
+    {
+      new: true,
+    }
+  ).select("-password -is_admin");
 
   return res
     .status(200)
@@ -234,23 +235,21 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const user = await User
-    .findByIdAndUpdate(
-      req.user?._id,
-      {
-        $set: {
-          username: username.toLowerCase(),
-          bio: bio,
-          location: location,
-          website: websiteLink,
-          userHandle: userHandle.toLowerCase(),
-        },
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        username: username.toLowerCase(),
+        bio: bio,
+        location: location,
+        website: websiteLink,
+        userHandle: userHandle.toLowerCase(),
       },
-      {
-        new: true,
-      }
-    )
-    .select("-password -is_admin -avatar -bannerImage -email");
+    },
+    {
+      new: true,
+    }
+  ).select("-password -is_admin -avatar -bannerImage -email");
 
   return res
     .status(200)
@@ -261,9 +260,9 @@ const getUserByUsername = asyncHandler(async (req, res) => {
   const { username } = req.params;
 
   // Find user by username and exclude sensitive fields
-  const user = await User
-    .findOne({ username })
-    .select("-passwordHash -refreshToken -is_admin -password -email");
+  const user = await User.findOne({ username }).select(
+    "-passwordHash -refreshToken -is_admin -password -email"
+  );
 
   if (!user) {
     res.status(404);
@@ -341,19 +340,17 @@ const updateBannerImage = asyncHandler(async (req, res) => {
     );
   }
 
-  const user = await User
-    .findByIdAndUpdate(
-      req.user?.id,
-      {
-        $set: {
-          bannerImage: bannerOnlinePath,
-        },
+  const user = await User.findByIdAndUpdate(
+    req.user?.id,
+    {
+      $set: {
+        bannerImage: bannerOnlinePath,
       },
-      {
-        new: true,
-      }
-    )
-    .select("-password -is_admin");
+    },
+    {
+      new: true,
+    }
+  ).select("-password -is_admin");
 
   return res
     .status(200)
