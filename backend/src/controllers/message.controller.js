@@ -1,4 +1,4 @@
-import Messages from "../Models/messages.model.js";
+import Messages from "../models/messages.model.js";
 import User from "../models/user.model.js";
 import { Follower } from "../models/follower.model.js";
 // Get conversations for a user
