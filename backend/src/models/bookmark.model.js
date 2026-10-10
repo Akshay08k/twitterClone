@@ -1,16 +1,24 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const BookmarkSchema = new Schema({
+const BookmarkSchema = new Schema(
+  {
     user: {
-        type: Schema.Types.ObjectId,
-        ref: "User"
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     post: {
-        type: Schema.Types.ObjectId,
-        ref: "Post"
+      type: Schema.Types.ObjectId,
+      ref: "Post",
+      required: true,
     },
-}, {
-    timestamps: true
-});
+  },
+  {
+    timestamps: true,
+  }
+);
 
-export const Bookmark = mongoose.model("Bookmark", BookmarkSchema);
+BookmarkSchema.index({ user: 1, post: 1 }, { unique: true });
+
+export const Bookmark =
+  mongoose.models.Bookmark || mongoose.model("Bookmark", BookmarkSchema);

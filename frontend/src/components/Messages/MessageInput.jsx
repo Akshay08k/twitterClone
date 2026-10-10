@@ -1,72 +1,96 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "../../contexts/axios";
 import socket from "../../utils/socket";
+import { Image, Smile, Send } from "lucide-react";
+import toast from "react-hot-toast";
 
-const MessageInput = ({ activeChat }) => {
+const MessageInput = ({ activeChat, onNewMessage }) => {
   const [content, setContent] = useState("");
   const [isSending, setIsSending] = useState(false);
   const reduxUser = useSelector((state) => state.user);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!content.trim() || isSending) return;
+    if (!content.trim() || isSending || !activeChat) return;
 
+    const messageText = content.trim();
     setIsSending(true);
+
     try {
       const res = await axios.post("/message/send", {
-        content,
+        content: messageText,
         sender: reduxUser._id,
         receiver: activeChat,
       });
 
-      socket.emit("sendMessage", res.data);
+      const savedMessage = res.data;
+      if (onNewMessage) onNewMessage(savedMessage);
+      socket.emit("sendMessage", savedMessage);
       setContent("");
     } catch (err) {
       console.error("Failed to send message", err);
+      toast.error("Failed to send message");
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e);
     }
   };
 
   return (
     <form
       onSubmit={handleSendMessage}
-      className="p-4 bg-gradient-to-r from-gray-800/30 to-gray-700/20"
+      className="p-3 bg-black/90 backdrop-blur-md border-t border-[#24272c]"
     >
-      <div className="flex items-center space-x-3">
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            placeholder="Type a message..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            disabled={isSending}
-            className="w-full rounded-full px-6 py-3 bg-gray-700/50 text-white placeholder-gray-400 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-300 backdrop-blur-sm"
-          />
-        </div>
+      <div className="flex items-center space-x-2 bg-[#16181c] border border-[#24272c] rounded-3xl px-3 py-1.5 focus-within:border-[#1d9bf0] transition-colors">
+        {/* Media / Image Icon */}
+        <button
+          type="button"
+          onClick={() => toast("Image upload in DMs coming soon!", { icon: "🖼️" })}
+          className="p-1.5 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors shrink-0"
+          title="Add photo"
+        >
+          <Image className="w-5 h-5" />
+        </button>
 
+        {/* Emoji Icon */}
+        <button
+          type="button"
+          onClick={() => toast("Emoji picker coming soon!", { icon: "😊" })}
+          className="p-1.5 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors shrink-0"
+          title="Add emoji"
+        >
+          <Smile className="w-5 h-5" />
+        </button>
+
+        {/* Message Input */}
+        <input
+          type="text"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Start a new message"
+          disabled={isSending}
+          className="flex-1 bg-transparent text-white text-sm placeholder-gray-500 outline-none px-1 py-1"
+        />
+
+        {/* Send Button */}
         <button
           type="submit"
           disabled={!content.trim() || isSending}
-          className="p-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-full hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="p-2 bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-40 disabled:hover:bg-[#1d9bf0] text-white rounded-full transition-all shrink-0 active:scale-95"
+          title="Send"
         >
           {isSending ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
+            <Send className="w-4 h-4" />
           )}
         </button>
       </div>

@@ -10,14 +10,11 @@ import {
 
 const router = Router();
 
-router.post("/create/:userId", verifyJWT, createFollower);
-
-router.get("/followers", verifyJWT, getFollowers);
-
-router.delete("/remove/:followerId", verifyJWT, deleteFollower);
-
-router.post("/following", verifyJWT, getFollowing);
-
-router.post("/isfollwing/:userId", verifyJWT, isFollowing);
+router.route("/create/:userId").post(verifyJWT, createFollower);
+router.route("/followers").get(verifyJWT, getFollowers);
+router.route("/remove/:followerId").delete(verifyJWT, deleteFollower);
+router.route("/following").get(verifyJWT, getFollowing).post(verifyJWT, getFollowing);
+router.route("/isFollowing/:userId").get(verifyJWT, isFollowing).post(verifyJWT, isFollowing);
+router.route("/isfollwing/:userId").get(verifyJWT, isFollowing).post(verifyJWT, isFollowing);
 
 export default router;

@@ -4,8 +4,14 @@ const PostSchema = new Schema(
   {
     description: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
+      default: "",
+    },
+    hashtags: {
+      type: [String],
+      default: [],
+      index: true,
     },
     user: {
       type: Schema.Types.ObjectId,

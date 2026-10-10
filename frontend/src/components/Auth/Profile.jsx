@@ -85,10 +85,9 @@ const Profile = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen bg-black text-white mt-16">
+      <div className="w-full min-h-screen">
         <Header username={userProfile.username} tweetsCount={posts.length} />
-        <main className="max-w-screen-md mx-auto">
+        <div>
           <Banner bannerImage={userProfile.bannerImage} />
           <div className="px-4">
             <div className="flex justify-between items-start relative">
@@ -96,11 +95,18 @@ const Profile = () => {
               <EditButton onClick={() => setShowEditModal(true)} />
             </div>
             <ProfileInfo userProfile={userProfile} />
-            <section className="mt-6">
-              <PostsList tweets={posts} user={userProfile} editable={true} />
+            <section className="mt-4 border-t border-[#24272c]">
+              <PostsList
+                tweets={posts}
+                user={userProfile}
+                editable={true}
+                onPostDeleted={(deletedId) =>
+                  setPosts((prev) => prev.filter((p) => p._id !== deletedId))
+                }
+              />
             </section>
           </div>
-        </main>
+        </div>
       </div>
 
       {showEditModal && (

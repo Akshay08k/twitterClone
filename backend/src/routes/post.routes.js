@@ -7,6 +7,9 @@ import {
   getSinglePost,
   fetchingPostsByUserId,
   deletePost,
+  toggleBookmark,
+  getBookmarks,
+  getTrendingHashtags,
 } from "../controllers/post.controller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -24,6 +27,9 @@ router.route("/create").post(
 );
 
 router.route("/").get(verifyJWT, getPosts);
+router.route("/trends").get(verifyJWT, getTrendingHashtags);
+router.route("/bookmarks").get(verifyJWT, getBookmarks);
+router.route("/:postId/bookmark").post(verifyJWT, toggleBookmark);
 router.route("/:postId/like").post(verifyJWT, PostLikeHandler);
 router.route("/post/:postId").get(verifyJWT, getSinglePost);
 router.route("/user/:userId").get(verifyJWT, fetchingPostsByUserId);

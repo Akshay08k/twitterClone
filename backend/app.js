@@ -11,11 +11,29 @@ import FollowRequestRoute from "./src/routes/followrequest.route.js";
 import PrivacyRoute from "./src/routes/privacy.route.js";
 import NotificationPreferenceRoute from "./src/routes/notificationPreference.route.js";
 import MessageRouter from "./src/routes/messages.route.js";
+
 export function createApp(ioServer) {
   const app = express();
+
+  const allowedOrigins = [
+    process.env.CORS_ORIGIN,
+    process.env.CORS_ORIGIN?.replace(/\/$/, ""),
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "https://twitty-v1.vercel.app",
+  ].filter(Boolean);
+
   app.use(
     cors({
-      origin: process.env.CORS_ORIGIN,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, postman) or if allowed
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+          callback(null, true);
+        } else {
+          callback(null, true); // Fallback allow in dev
+        }
+      },
       credentials: true,
     })
   );
@@ -25,13 +43,18 @@ export function createApp(ioServer) {
   app.use(express.static("public"));
   app.use(cookieParser());
 
-  //Attaching io to req just like req.user
+  // Attaching io to req just like req.user
   app.use((req, res, next) => {
     req.app.io = ioServer;
     next();
   });
 
-  //Routes
+  // Health check route
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date() });
+  });
+
+  // Routes
   app.use("/user", userRoute);
   app.use("/posts", postRoute);
   app.use("/comment", commentRoute);
@@ -41,6 +64,19 @@ export function createApp(ioServer) {
   app.use("/privacy", PrivacyRoute);
   app.use("/notification_preference", NotificationPreferenceRoute);
   app.use("/message", MessageRouter);
+
+  // Global Error Handler Middleware
+  app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(statusCode).json({
+      success: false,
+      statusCode,
+      message,
+      errors: err.errors || [],
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+    });
+  });
 
   return app;
 }

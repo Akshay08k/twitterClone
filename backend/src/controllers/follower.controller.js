@@ -1,6 +1,7 @@
 import { ApiError, ApiResponce, asyncHandler } from "../utils/index.js";
 import { Follower } from "../models/follower.model.js";
 import { Notification } from "../models/notification.model.js";
+import { Block } from "../models/block.model.js";
 
 const createFollower = asyncHandler(async (req, res) => {
   const { userId } = req.params;
@@ -9,9 +10,17 @@ const createFollower = asyncHandler(async (req, res) => {
   if (userId === req.user._id.toString())
     throw new ApiError(400, "You can't follow yourself");
 
+  const isBlocked = await Block.exists({
+    $or: [
+      { blocker: req.user._id, blocked: userId },
+      { blocker: userId, blocked: req.user._id },
+    ],
+  });
+  if (isBlocked) throw new ApiError(403, "Cannot follow this user");
+
   const alreadyFollowing = await Follower.findOne({
-    user: req.user._id,
-    follower: userId,
+    user: userId,
+    follower: req.user._id,
   });
 
   if (alreadyFollowing) throw new ApiError(400, "Already following");
@@ -53,7 +62,7 @@ const createFollower = asyncHandler(async (req, res) => {
 const getFollowers = asyncHandler(async (req, res) => {
   const followers = await Follower.find({ user: req.user._id }).populate(
     "follower",
-    "username avatar"
+    "username avatar userHandle"
   );
   return res
     .status(200)
@@ -64,13 +73,13 @@ const deleteFollower = asyncHandler(async (req, res) => {
   const { followerId } = req.params;
 
   if (!followerId) {
-    throw new ApiError(400, "Follower ID is required");
+    throw new ApiError(400, "User ID is required");
   }
 
-  // Delete the follower relationship
+  // Delete the follower relationship (req.user unfollows followerId)
   const follower = await Follower.findOneAndDelete({
-    user: req.user._id,
-    follower: followerId,
+    user: followerId,
+    follower: req.user._id,
   });
 
   if (!follower) {
@@ -90,7 +99,7 @@ const deleteFollower = asyncHandler(async (req, res) => {
       new ApiResponce(
         200,
         follower,
-        "Follower deleted and notification removed"
+        "Unfollowed and notification removed"
       )
     );
 });

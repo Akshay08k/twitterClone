@@ -1,48 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import axios from "../../contexts/axios";
-import socket from "../../utils/socket";
+import { Link } from "react-router-dom";
 
-const ChatMessages = ({ activeChat }) => {
-  const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+const formatMessageTime = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+const ChatMessages = ({ messages, activeChat, selectedUser }) => {
   const chatRef = useRef(null);
   const reduxUser = useSelector((state) => state.user);
-  const myId = reduxUser._id;
-
-  useEffect(() => {
-    const fetchMessages = async () => {
-      setIsLoading(true);
-      try {
-        const res = await axios.get(`/message/fetch/${activeChat}`);
-        setMessages(res.data);
-      } catch (err) {
-        console.error("Failed to load messages", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (activeChat) {
-      fetchMessages();
-    }
-  }, [activeChat]);
-
-  useEffect(() => {
-    const handleReceiveMessage = (newMessage) => {
-      if (
-        newMessage.sender._id === activeChat ||
-        newMessage.receiver === activeChat
-      ) {
-        setMessages((prev) => [...prev, newMessage]);
-      }
-    };
-
-    socket.on("receiveMessage", handleReceiveMessage);
-    return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
-    };
-  }, [activeChat]);
+  const myId = reduxUser?._id;
 
   useEffect(() => {
     if (chatRef.current) {
@@ -50,77 +19,80 @@ const ChatMessages = ({ activeChat }) => {
     }
   }, [messages]);
 
-  const isOwnMessage = (msg) => msg.sender._id === myId;
-
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
-          <div
-            className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"
-            style={{ animationDelay: "0.1s" }}
-          ></div>
-          <div
-            className="w-3 h-3 bg-black rounded-full animate-bounce"
-            style={{ animationDelay: "0.2s" }}
-          ></div>
-        </div>
-      </div>
-    );
-  }
+  const isOwnMessage = (msg) => {
+    const senderId = msg.sender?._id || msg.sender;
+    return senderId?.toString() === myId?.toString();
+  };
 
   return (
     <div
       ref={chatRef}
-      className="h-full px-4 py-6 space-y-4 overflow-y-auto bg-gradient-to-b from-gray-900/20 to-black/40 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
+      className="h-full px-4 py-6 overflow-y-auto space-y-4 bg-black select-text"
     >
-      {messages.map((msg, index) => (
-        <div
-          key={msg._id}
-          className={`flex animate-fadeIn ${
-            isOwnMessage(msg) ? "justify-end" : "justify-start"
-          }`}
-          style={{ animationDelay: `${index * 0.1}s` }}
-        >
-          <div
-            className={`flex space-x-3 max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg ${
-              isOwnMessage(msg) ? "flex-row-reverse space-x-reverse" : ""
-            }`}
+      {/* Top Profile Summary Card (Matches Twitter DM screen) */}
+      {selectedUser && (
+        <div className="flex flex-col items-center text-center py-6 border-b border-[#24272c]/40 mb-6 space-y-2">
+          <Link to={`/profile/${selectedUser.username}`} className="group">
+            <img
+              src={selectedUser.avatar || "/default-avatar.png"}
+              alt={selectedUser.username}
+              className="w-16 h-16 rounded-full object-cover border border-[#24272c] group-hover:opacity-90 transition-opacity"
+            />
+          </Link>
+          <div>
+            <Link
+              to={`/profile/${selectedUser.username}`}
+              className="font-extrabold text-white text-base hover:underline block"
+            >
+              {selectedUser.username}
+            </Link>
+            <p className="text-gray-500 text-xs">
+              @{selectedUser.userHandle || selectedUser.username}
+            </p>
+          </div>
+          {selectedUser.bio && (
+            <p className="text-gray-400 text-xs max-w-xs">{selectedUser.bio}</p>
+          )}
+          <Link
+            to={`/profile/${selectedUser.username}`}
+            className="text-xs font-semibold text-[#1d9bf0] hover:underline pt-1 inline-block"
           >
-            {!isOwnMessage(msg) && (
-              <img
-                src={msg.sender.avatar}
-                alt="Avatar"
-                className="w-8 h-8 rounded-full ring-2 ring-gray-600/30 flex-shrink-0"
-              />
-            )}
-            <div className="flex flex-col space-y-1">
+            View profile
+          </Link>
+        </div>
+      )}
+
+      {/* Messages Stream */}
+      {messages.length === 0 ? (
+        <div className="text-center py-10 text-gray-500 text-xs">
+          Say hello to start the conversation!
+        </div>
+      ) : (
+        messages.map((msg, index) => {
+          const isMine = isOwnMessage(msg);
+          return (
+            <div
+              key={msg._id || index}
+              className={`flex flex-col ${isMine ? "items-end" : "items-start"} animate-fadeIn`}
+            >
               <div
-                className={`${
-                  isOwnMessage(msg)
-                    ? "bg-gradient-to-r from-blue-600 to-blue-500 shadow-blue-500/25"
-                    : "bg-gradient-to-r from-gray-700 to-gray-600 shadow-gray-700/25"
-                } rounded-2xl px-4 py-3 shadow-lg backdrop-blur-sm hover:shadow-xl transition-all duration-300`}
-              >
-                <p className="text-sm leading-relaxed text-white">
-                  {msg.content}
-                </p>
-              </div>
-              <p
-                className={`text-xs text-gray-500 px-2 ${
-                  isOwnMessage(msg) ? "text-right" : "text-left"
+                className={`max-w-[78%] sm:max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
+                  isMine
+                    ? "bg-[#1d9bf0] text-white rounded-br-sm"
+                    : "bg-[#202327] text-white rounded-bl-sm"
                 }`}
               >
-                {new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
+                <p className="whitespace-pre-wrap">{msg.content}</p>
+              </div>
+
+              {/* Message Timestamp */}
+              <span className="text-[10px] text-gray-500 mt-1 px-1">
+                {formatMessageTime(msg.createdAt)}
+              </span>
             </div>
-          </div>
-        </div>
-      ))}
+          );
+        })
+      )}
     </div>
   );
 };

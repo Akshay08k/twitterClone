@@ -36,6 +36,7 @@ ioServer.on("connection", (socket) => {
 
 connectDB().then(() => {
   server.listen(PORT, () => {
-    console.log(` Server running on ${process.env.CORS_ORIGIN}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🌐 Allowed CORS Origin: ${process.env.CORS_ORIGIN || "All local & production origins"}`);
   });
 });

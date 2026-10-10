@@ -3,6 +3,8 @@ import User from "../models/user.model.js";
 import NotificationPreference from "../models/notificationPreference.model.js";
 import { PrivacySettings } from "../models/privacy.model.js";
 import { Follower } from "../models/follower.model.js";
+import { Block } from "../models/block.model.js";
+import FollowRequest from "../models/followRequest.mode.js";
 import {
   ApiError,
   ApiResponce,
@@ -85,18 +87,12 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   let avatarOnlinePath = null;
-  if (req.files?.avatar?.length > 1) {
-    let avatarLocalPath = req.files?.avatar[0]?.path;
+  if (req.files?.avatar && req.files.avatar.length > 0) {
+    let avatarLocalPath = req.files.avatar[0]?.path;
 
-    if (!avatarLocalPath) {
-      throw new ApiError(
-        500,
-        "Something Went Wrong While Uploading Avatar  " +
-          req.files?.avatar[0].path
-      );
+    if (avatarLocalPath) {
+      avatarOnlinePath = await uploadOnCloudinary(avatarLocalPath);
     }
-
-    avatarOnlinePath = await uploadOnCloudinary(avatarLocalPath);
   }
 
   const user = await User.create({
@@ -229,27 +225,23 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 });
 
 const updateUserDetails = asyncHandler(async (req, res) => {
-  const { username, bio, location, websiteLink, userHandle } = req.body;
+  const { username, bio, location, websiteLink, website, userHandle } = req.body;
 
-  if (!username || !bio || !location || !websiteLink || !userHandle) {
-    throw new ApiError(400, "All fields are required");
+  const updateFields = {};
+  if (username) updateFields.username = username.toLowerCase().trim();
+  if (userHandle) {
+    updateFields.userHandle = userHandle.toLowerCase().replace(/^@/, "").trim();
   }
+  if (bio !== undefined) updateFields.bio = bio;
+  if (location !== undefined) updateFields.location = location;
+  if (websiteLink !== undefined) updateFields.website = websiteLink;
+  if (website !== undefined) updateFields.website = website;
 
   const user = await User.findByIdAndUpdate(
     req.user?._id,
-    {
-      $set: {
-        username: username.toLowerCase(),
-        bio: bio,
-        location: location,
-        website: websiteLink,
-        userHandle: userHandle.toLowerCase(),
-      },
-    },
-    {
-      new: true,
-    }
-  ).select("-password -is_admin -avatar -bannerImage -email");
+    { $set: updateFields },
+    { new: true }
+  ).select("-password -is_admin -refreshToken -passwordHash");
 
   return res
     .status(200)
@@ -269,15 +261,42 @@ const getUserByUsername = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 
-  const isCurrentUser = req.user._id.toString() === user._id.toString();
+  const currentUserId = req.user._id;
+  const isCurrentUser = currentUserId.toString() === user._id.toString();
+
+  // Check Block status in both directions
+  const [isBlockedByMe, isBlockingMe] = await Promise.all([
+    Block.exists({ blocker: currentUserId, blocked: user._id }),
+    Block.exists({ blocker: user._id, blocked: currentUserId }),
+  ]);
+
+  if (isBlockingMe) {
+    return res.status(200).json({
+      restricted: true,
+      isBlockingMe: true,
+      isBlockedByMe: !!isBlockedByMe,
+      user: {
+        _id: user._id,
+        username: user.username,
+        userHandle: user.userHandle,
+        avatar: user.avatar,
+        bannerImage: user.bannerImage,
+      },
+      userMeta: {
+        followersCount: 0,
+        followingCount: 0,
+      },
+    });
+  }
+
   const isPrivateAccount = await PrivacySettings.findOne({ userId: user._id });
   // Check if requester is a follower
   const isFollower = await Follower.exists({
     user: user._id,
-    follower: req.user._id,
+    follower: currentUserId,
   });
 
-  const isPrivate = isPrivateAccount.privateAccount || false;
+  const isPrivate = isPrivateAccount?.privateAccount || false;
   const isRestricted = isPrivate && !isFollower && !isCurrentUser;
 
   const [userFollowers, userFollowing] = await Promise.all([
@@ -291,12 +310,16 @@ const getUserByUsername = asyncHandler(async (req, res) => {
     userHandle: user.userHandle,
     avatar: user.avatar,
     bannerImage: user.bannerImage,
-    isPrivate: isPrivateAccount.privateAccount,
+    isPrivate: isPrivate,
+    isBlockedByMe: !!isBlockedByMe,
+    isBlockingMe: false,
   };
 
   if (isRestricted) {
     return res.status(200).json({
       restricted: true,
+      isBlockedByMe: !!isBlockedByMe,
+      isBlockingMe: false,
       user: {
         ...commonUserData,
         bio: "This account is private.",
@@ -310,6 +333,8 @@ const getUserByUsername = asyncHandler(async (req, res) => {
 
   return res.status(200).json({
     restricted: false,
+    isBlockedByMe: !!isBlockedByMe,
+    isBlockingMe: false,
     user: {
       ...commonUserData,
       bio: user.bio,
@@ -364,6 +389,150 @@ const deleteAccount = asyncHandler(async (req, res) => {
     .json(new ApiResponce(200, user, "Account Deleted Successfully"));
 });
 
+const searchUsers = asyncHandler(async (req, res) => {
+  const query = req.query.q || req.query.search || "";
+  if (!query.trim()) {
+    return res.status(200).json(new ApiResponce(200, [], "No search query provided"));
+  }
+
+  const clean = query.trim().replace(/^@/, "");
+  const escaped = clean.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const users = await User.find({
+    $or: [
+      { username: { $regex: escaped, $options: "i" } },
+      { userHandle: { $regex: escaped, $options: "i" } },
+    ],
+  })
+    .select("username userHandle avatar bio")
+    .limit(15);
+
+  return res.status(200).json(new ApiResponce(200, users, "Users found"));
+});
+
+const getSuggestedUsers = asyncHandler(async (req, res) => {
+  const currentUserId = req.user?._id;
+
+  // Find users whom the current user is already following
+  const following = await Follower.find({ follower: currentUserId }).select("user");
+  const followingUserIds = following.map((f) => f.user);
+
+  // Exclude current user, followed users, and blocked users (both directions)
+  const blocks = await Block.find({
+    $or: [{ blocker: currentUserId }, { blocked: currentUserId }],
+  });
+  const blockedUserIds = blocks.map((b) =>
+    b.blocker.toString() === currentUserId.toString() ? b.blocked : b.blocker
+  );
+
+  const excludedIds = [currentUserId, ...followingUserIds, ...blockedUserIds];
+
+  const suggestedUsers = await User.find({ _id: { $nin: excludedIds } })
+    .select("username userHandle avatar bio")
+    .limit(5);
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, suggestedUsers, "Suggested users fetched successfully"));
+});
+
+const blockUser = asyncHandler(async (req, res) => {
+  const currentUserId = req.user._id;
+  const { targetUserId } = req.params;
+
+  if (!targetUserId) {
+    throw new ApiError(400, "Target user ID is required");
+  }
+
+  if (currentUserId.toString() === targetUserId.toString()) {
+    throw new ApiError(400, "You cannot block yourself");
+  }
+
+  const targetUser = await User.findById(targetUserId);
+  if (!targetUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Create or keep block record
+  await Block.findOneAndUpdate(
+    { blocker: currentUserId, blocked: targetUserId },
+    { blocker: currentUserId, blocked: targetUserId },
+    { upsert: true, new: true }
+  );
+
+  // Sever follow relationships in both directions
+  await Promise.all([
+    Follower.deleteMany({
+      $or: [
+        { user: currentUserId, follower: targetUserId },
+        { user: targetUserId, follower: currentUserId },
+      ],
+    }),
+    FollowRequest.deleteMany({
+      $or: [
+        { from: currentUserId, to: targetUserId },
+        { from: targetUserId, to: currentUserId },
+      ],
+    }),
+  ]);
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, { isBlocked: true }, `Blocked @${targetUser.username}`));
+});
+
+const unblockUser = asyncHandler(async (req, res) => {
+  const currentUserId = req.user._id;
+  const { targetUserId } = req.params;
+
+  if (!targetUserId) {
+    throw new ApiError(400, "Target user ID is required");
+  }
+
+  await Block.findOneAndDelete({
+    blocker: currentUserId,
+    blocked: targetUserId,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, { isBlocked: false }, "User unblocked successfully"));
+});
+
+const getBlockedUsers = asyncHandler(async (req, res) => {
+  const currentUserId = req.user._id;
+
+  const blockedList = await Block.find({ blocker: currentUserId })
+    .populate("blocked", "username userHandle avatar bio")
+    .sort({ createdAt: -1 });
+
+  const users = blockedList
+    .filter((b) => b.blocked != null)
+    .map((b) => b.blocked);
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, users, "Blocked users retrieved successfully"));
+});
+
+const getBlockStatus = asyncHandler(async (req, res) => {
+  const currentUserId = req.user._id;
+  const { targetUserId } = req.params;
+
+  const [isBlockedByMe, isBlockingMe] = await Promise.all([
+    Block.exists({ blocker: currentUserId, blocked: targetUserId }),
+    Block.exists({ blocker: targetUserId, blocked: currentUserId }),
+  ]);
+
+  return res.status(200).json(
+    new ApiResponce(
+      200,
+      { isBlockedByMe: !!isBlockedByMe, isBlockingMe: !!isBlockingMe },
+      "Block status fetched"
+    )
+  );
+});
+
 export {
   registerUser,
   login,
@@ -376,4 +545,10 @@ export {
   updateBannerImage,
   getUserByUsername,
   deleteAccount,
+  searchUsers,
+  getSuggestedUsers,
+  blockUser,
+  unblockUser,
+  getBlockedUsers,
+  getBlockStatus,
 };

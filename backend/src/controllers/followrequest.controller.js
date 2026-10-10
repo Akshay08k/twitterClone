@@ -4,10 +4,21 @@ import { Follower } from "../models/follower.model.js";
 import User from "../models/user.model.js";
 import { Notification } from "../models/notification.model.js";
 import { PrivacySettings } from "../models/privacy.model.js";
+import { Block } from "../models/block.model.js";
 
 const sendFollowRequest = asyncHandler(async (req, res) => {
   const toUserId = req.params.id;
   const fromUserId = req.user._id;
+
+  const isBlocked = await Block.exists({
+    $or: [
+      { blocker: fromUserId, blocked: toUserId },
+      { blocker: toUserId, blocked: fromUserId },
+    ],
+  });
+  if (isBlocked) {
+    return res.status(403).json({ message: "Cannot send follow request to this user" });
+  }
 
   const toUser = await User.findById(toUserId);
   const isPrivateAccount = await PrivacySettings.findOne({ userId: toUserId });

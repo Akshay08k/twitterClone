@@ -94,8 +94,19 @@ const createComment = asyncHandler(async (req, res) => {
 
 const deleteComment = asyncHandler(async (req, res) => {
   const { commentId } = req.params;
+  const userId = req.user._id;
+
   if (!commentId) {
-    throw new ApiError(400, "Comment Not Found");
+    throw new ApiError(400, "Comment ID is required");
+  }
+
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new ApiError(404, "Comment not found");
+  }
+
+  if (comment.user.toString() !== userId.toString()) {
+    throw new ApiError(403, "You are not authorized to delete this comment");
   }
 
   const commentDeleted = await Comment.findByIdAndDelete(commentId);

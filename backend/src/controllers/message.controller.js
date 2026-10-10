@@ -1,6 +1,7 @@
 import Messages from "../models/messages.model.js";
 import User from "../models/user.model.js";
 import { Follower } from "../models/follower.model.js";
+import { Block } from "../models/block.model.js";
 // Get conversations for a user
 export const getConversations = async (req, res) => {
   try {
@@ -58,7 +59,19 @@ export const getMessagesBetweenUsers = async (req, res) => {
 // Send a new message
 export const sendMessage = async (req, res) => {
   try {
-    const { content, sender, receiver, attachments } = req.body;
+    const { content, receiver, attachments } = req.body;
+    const sender = req.user?._id || req.body.sender;
+
+    const isBlocked = await Block.exists({
+      $or: [
+        { blocker: sender, blocked: receiver },
+        { blocker: receiver, blocked: sender },
+      ],
+    });
+    if (isBlocked) {
+      return res.status(403).json({ message: "Cannot send message to this user" });
+    }
+
     const newMessage = new Messages({
       content,
       sender,

@@ -1,181 +1,69 @@
-## 🐦 Twitter Clone – Version 1
+# 🐦 Twitty — Full-Stack Twitter / X Clone
 
-A simple, functional Twitter clone built using modern web technologies. This version focuses on core social media features such as user authentication, tweet creation, and interaction.
-
----
-
-### 🚀 Features (v1)
-
-- **User Authentication**
-
-  - Sign up, log in, and log out
-  - JWT or session-based authentication
-
-- **Create & Manage Tweets**
-
-  - Post new tweets (text)
-  - Delete own tweets
-
-- **Like System**
-
-  - Like and unlike tweets
-
-- **Follow System**
-
-  - Follow and unfollow other users
-  - View posts only from followed users in the home feed
-
-- **User Profile**
-
-  - View user profile with tweet history
-  - Profile bio and picture support (if available)
-
-- **Basic Feed**
-
-  - Reverse chronological feed of tweets from followed users
+A full-stack, real-time Twitter / X clone built with Node.js, Express, MongoDB, Socket.io, React, Redux Toolkit, and Tailwind CSS.
 
 ---
 
-### 🛠️ Tech Stack
+## ✨ Features Implemented & Upgraded
 
-> Replace these with your actual tech stack
+### 🎨 Modern UI & UX (Twitter / X Design System)
+- **3-Column Responsive Layout**:
+  - **Left Sidebar**: Navigation (Home, Explore, Notifications, Messages, Bookmarks, Profile, Settings), Post CTA button, and user account switcher with popup.
+  - **Center Feed**: Sticky glassmorphism header, feed tab toggle (**"For you"** vs **"Following"**), in-feed quick Tweet composer with media preview & character counter, and sleek tweet cards.
+  - **Right Sidebar**: Instant search bar, **"What's happening"** trending topics widget, and **"Who to follow"** suggestions with live follow/unfollow buttons.
+  - **Mobile Experience**: Responsive bottom navigation bar and floating compose FAB.
+- **Micro-Interactions**: Real-time like counts, instant bookmarking, copy tweet link, comment threads, and smooth toast alerts.
 
-- **Frontend:** React.js / Next.js / Tailwind CSS
-- **Backend:** Node.js / Express.js
-- **Database:** MongoDB / PostgreSQL / Firebase
-- **Authentication:** JWT / OAuth / Sessions
-- **Deployment:** Vercel / Heroku / Render / Railway
+### 🛡️ Backend & API Enhancements
+- **Security & Authorization**:
+  - Enforced strict ownership checks: Users can only delete their own tweets and comments.
+  - Secured direct messaging so sender cannot be spoofed.
+- **Bookmarks Engine**:
+  - Full backend Bookmark model, toggle endpoint (`POST /posts/:postId/bookmark`), and retrieval endpoint (`GET /posts/bookmarks`).
+- **Explore & User Discovery**:
+  - Search posts by keyword or hashtag (`GET /posts?search=...`).
+  - Search users by username or handle (`GET /user/search?q=...`).
+  - Smart user recommendations (`GET /user/suggested`).
+- **Follow & Unfollow Fixes**:
+  - Corrected relational query inversion on follow and unfollow operations.
+  - Fixed route aliases for `/isFollowing/:userId` (GET and POST).
+- **Feed Optimization**:
+  - Reverse chronological ordering (`createdAt: -1`).
+  - Dual feeds: Global stream and Following-only stream (`/posts?type=following`).
+- **Robust Error Handling & CORS**:
+  - Global Express JSON error handler middleware (no raw HTML error pages).
+  - Multi-origin CORS support for both local development (`localhost:5173`) and production deployments.
 
 ---
 
-### 📁 Folder Structure (Example)
+## 🛠️ Tech Stack
 
-```
-/client        # Frontend
-/server        # Backend (API)
-.env           # Environment config (excluded from version control)
-README.md
+- **Frontend**: React 18, Vite 6, Tailwind CSS, Lucide React, Redux Toolkit, React Router 7, Socket.io Client, React Hot Toast
+- **Backend**: Node.js, Express 4, MongoDB (Mongoose), Socket.io, Cloudinary, Multer, JWT, Bcrypt
+
+---
+
+## 🚀 Getting Started
+
+### 1. Backend Setup
+```bash
+cd backend
+npm install
+npm run dev
 ```
 
----
-
-### 🔧 Getting Started
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/your-username/twitter-clone.git
-   cd twitter-clone
-   ```
-
-2. **Install dependencies**
-
-   - Frontend:
-
-     ```bash
-     cd client
-     npm install
-     ```
-
-   - Backend:
-
-     ```bash
-     cd server
-     npm install
-     ```
-
-3. **Environment setup**
-
-   - Create a `.env` file in both frontend and backend folders
-   - Add relevant API keys, DB URIs, JWT secrets, etc.
-
-4. **Run the app**
-
-   ```bash
-   # Run frontend
-   cd client
-   npm start
-
-   # Run backend
-   cd server
-   npm run dev
-   ```
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
-### 📌 Notes
-
-- This is **Version 1** of the project. The goal was to establish a minimal working social media experience.
-- [Version 2 Roadmap](./docs/v2-roadmap.md) includes features like retweets, bookmarks, 2FA, and analytics.
-
-# Twitter Clone - Version 2 Roadmap
-
-This document outlines the planned features and enhancements for Version 2 (v2) of the Twitter Clone project.
-
----
-
-## Planned Features
-
-### Core Social Features
-
-- **Retweet Functionality**  
-  Support for direct and quote retweets.
-
-- **Block User**  
-  Ability to block users to hide their tweets and messages.
-
-- **Save / Bookmark Posts**  
-  Users can save tweets privately for later reading.
-
-- **Customized Feed**  
-  Algorithmic feed personalized based on user interests and follows.
-
-- **Trending Section**  
-  Display trending hashtags and posts based on real-time activity.
-
----
-
-### Notifications
-
-- **Real-Time Message Notifications**  
-  Live alerts for new messages via WebSockets or other methods.
-
-- **Email Notifications**  
-  Notify users of new followers, direct messages, likes, and other events.
-
-- **Personalized Notification Preferences**  
-  Users can customize notification settings for email, in-app, and push notifications.
-
-- **Push Notifications (Web Push / PWA)**  
-  Browser and device notifications for alerts when users are offline.
-
----
-
-### Power Features
-
-- **Analytics for Users**  
-  Provide users with insights on tweet impressions, likes, retweets, and engagement.
-
-- **Scheduled Posts**  
-  Allow users to schedule tweets to be posted at a later time.
-
-- **Rate Limiting / Anti-Spam Middleware**  
-  Implement backend protections against spamming and abuse.
-
----
-
-### Security & UX
-
-- **Two-Factor Authentication (2FA)**  
-  Optional extra layer of security via email or OTP-based 2FA.
-
----
-
-## Notes
-
-- This roadmap is a guide for future development and may be updated as the project evolves.
-- Features will be prioritized based on complexity and user impact.
-
----
-
-Feel free to contribute or suggest additional features!
+## 🧭 Future Roadmap & Ideas
+1. **Polls & Surveys**: Add interactive polls inside tweets with expiration timers.
+2. **Hashtag & Mention Highlighting**: Parse `@username` and `#hashtag` inside tweet text into clickable links.
+3. **GIF Picker & Video Playback**: Integration with Giphy / Tenor API and video attachment playback.
+4. **Push Notifications**: Web push notifications for likes, comments, and direct messages using Web Push API.
+5. **Infinite Scroll Pagination**: Replace static limit with cursor-based pagination for feeds.

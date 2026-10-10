@@ -24,6 +24,8 @@ import NotFound from "./components/NotFound";
 import Settings from "./components/Settings/SettingsPage";
 import NotificationPage from "./components/Notification/Notification";
 import MessagingPage from "./components/Messages/Message";
+import BookmarksPage from "./components/Bookmarks/BookmarksPage";
+
 const App = () => {
   return (
     <Provider store={store}>
@@ -35,6 +37,7 @@ const App = () => {
             <Route path="/" element={<Layout />}>
               <Route path="/" element={<Home />} />
               <Route path="explore" element={<ExploreTab />} />
+              <Route path="bookmarks" element={<BookmarksPage />} />
               <Route path="updates" element={<ProfileUpdate />} />
               <Route path="/messages" element={<MessagingPage />} />
               <Route path="posts/:id" element={<SinglePost />} />
