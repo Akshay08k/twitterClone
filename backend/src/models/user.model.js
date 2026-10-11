@@ -70,6 +70,24 @@ const UserSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    premiumTier: {
+      type: String,
+      enum: ["none", "basic", "premium", "premium_plus"],
+      default: "none",
+    },
+    verifiedBadgeType: {
+      type: String,
+      enum: ["blue", "gold", "none"],
+      default: "none",
+    },
+    subscriptionExpiresAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

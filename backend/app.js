@@ -11,6 +11,8 @@ import FollowRequestRoute from "./src/routes/followrequest.route.js";
 import PrivacyRoute from "./src/routes/privacy.route.js";
 import NotificationPreferenceRoute from "./src/routes/notificationPreference.route.js";
 import MessageRouter from "./src/routes/messages.route.js";
+import simRoute from "./src/routes/sim.routes.js";
+import subscriptionRoute from "./src/routes/subscription.routes.js";
 
 export function createApp(ioServer) {
   const app = express();
@@ -64,6 +66,9 @@ export function createApp(ioServer) {
   app.use("/privacy", PrivacyRoute);
   app.use("/notification_preference", NotificationPreferenceRoute);
   app.use("/message", MessageRouter);
+  app.use("/api/sim", simRoute);
+  app.use("/sim", simRoute);
+  app.use("/subscription", subscriptionRoute);
 
   // Global Error Handler Middleware
   app.use((err, req, res, next) => {

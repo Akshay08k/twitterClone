@@ -40,6 +40,22 @@ const createComment = asyncHandler(async (req, res) => {
 
   const commentCreated = await Comment.create(commentData);
 
+  // Feed positive signal (+15 weight) to Recommendation Engine
+  Post.findById(postId).select("hashtags user").then((postObj) => {
+    if (postObj) {
+      import("../models/userInteraction.model.js").then(({ default: UserInteraction }) => {
+        UserInteraction.create({
+          user: user._id,
+          post: postId,
+          author: postObj.user,
+          type: "comment",
+          hashtags: postObj.hashtags || [],
+          weight: 15.0,
+        }).catch(() => {});
+      });
+    }
+  }).catch(() => {});
+
   if (parentCommentId) {
     await Comment.findByIdAndUpdate(parentCommentId, {
       $push: { replies: commentCreated._id },

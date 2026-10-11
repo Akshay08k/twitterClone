@@ -2,6 +2,7 @@ import Messages from "../models/messages.model.js";
 import User from "../models/user.model.js";
 import { Follower } from "../models/follower.model.js";
 import { Block } from "../models/block.model.js";
+import { handleSimulatedBotReply } from "../services/simulatedBotService.js";
 // Get conversations for a user
 export const getConversations = async (req, res) => {
   try {

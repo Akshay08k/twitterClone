@@ -11,6 +11,9 @@ import { Notification } from "../models/notification.model.js";
 import { Bookmark } from "../models/bookmark.model.js";
 import { Follower } from "../models/follower.model.js";
 import { Block } from "../models/block.model.js";
+import UserInteraction from "../models/userInteraction.model.js";
+import { getRecommendedFeed, SIM_CLUSTERS } from "../services/recommendation.service.js";
+import { handleSimulatedPostReaction } from "../services/simulatedBotService.js";
 
 const createPost = asyncHandler(async (req, res) => {
   const { description } = req.body;
@@ -61,6 +64,14 @@ const createPost = asyncHandler(async (req, res) => {
       req.app.io.emit("newPost", fullPost);
     }
 
+    // Trigger AI persona reaction/comment to post
+    handleSimulatedPostReaction({
+      postId: post._id,
+      postDescription: description || "",
+      authorUserId: req.user._id,
+      io: req.app.io,
+    });
+
     return res
       .status(200)
       .json(new ApiResponce(200, fullPost, "Post Created Successfully"));
@@ -81,6 +92,16 @@ const getSinglePost = asyncHandler(async (req, res) => {
   if (!post) {
     return res.status(404).json(new ApiResponce(404, null, "Post Not Found"));
   }
+
+  // Feed click interaction (+8 weight) to Recommendation Engine
+  UserInteraction.create({
+    user: userId,
+    post: postId,
+    author: post.user?._id || post.user,
+    type: "click",
+    hashtags: post.hashtags || [],
+    weight: 8.0,
+  }).catch(() => {});
 
   const [postLikesCount, comments, postCommentsCount, userLiked, isBookmarked] =
     await Promise.all([
@@ -169,6 +190,16 @@ const PostLikeHandler = asyncHandler(async (req, res) => {
   await PostLikes.create({ post: postId, user: userId });
   const updatedLikesCount = await PostLikes.countDocuments({ post: postId });
 
+  // Feed positive like signal (+10 weight) to Recommendation Engine
+  UserInteraction.create({
+    user: userId,
+    post: postId,
+    author: post.user,
+    type: "like",
+    hashtags: post.hashtags || [],
+    weight: 10.0,
+  }).catch(() => {});
+
   return res.status(200).json(
     new ApiResponce(
       200,
@@ -180,7 +211,23 @@ const PostLikeHandler = asyncHandler(async (req, res) => {
 
 const getPosts = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { type, search } = req.query;
+  const { type, search, page } = req.query;
+
+  // 1. If For You feed (default), run Twitter Heavy Ranker Recommendation Engine!
+  if (!search && type !== "following") {
+    const recommendedResult = await getRecommendedFeed(userId, {
+      limit: 35,
+      page: parseInt(page) || 1,
+    });
+
+    return res.status(200).json(
+      new ApiResponce(
+        200,
+        recommendedResult.posts,
+        "Algorithmic feed fetched successfully"
+      )
+    );
+  }
 
   let query = {};
 
@@ -291,6 +338,43 @@ const deletePost = asyncHandler(async (req, res) => {
     .json(new ApiResponce(200, { postId }, "Post Deleted Successfully"));
 });
 
+const updatePost = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+  const { description } = req.body;
+  const userId = req.user._id;
+
+  const post = await Post.findById(postId);
+  if (!post) throw new ApiError(404, "Post not found");
+
+  if (post.user.toString() !== userId.toString()) {
+    throw new ApiError(403, "You can only edit your own posts");
+  }
+
+  const extractedHashtags = description
+    ? [
+        ...new Set(
+          (description.match(/#[a-zA-Z0-9_\p{L}\p{N}]+/gu) || []).map((t) =>
+            t.toLowerCase()
+          )
+        ),
+      ]
+    : [];
+
+  post.description = description || "";
+  post.hashtags = extractedHashtags;
+  post.isEdited = true;
+  await post.save();
+
+  const updatedPost = await Post.findById(postId).populate(
+    "user",
+    "-passwordHash -refreshToken -password"
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, updatedPost, "Post edited successfully"));
+});
+
 const fetchingPostsByUserId = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const currentUserId = req.user?._id;
@@ -360,6 +444,16 @@ const toggleBookmark = asyncHandler(async (req, res) => {
   }
 
   await Bookmark.create({ post: postId, user: userId });
+
+  // Feed positive bookmark signal (+12 weight) to Recommendation Engine
+  UserInteraction.create({
+    user: userId,
+    post: postId,
+    author: post.user,
+    type: "bookmark",
+    hashtags: post.hashtags || [],
+    weight: 12.0,
+  }).catch(() => {});
   return res
     .status(200)
     .json(new ApiResponce(200, { isBookmarked: true }, "Post bookmarked"));
@@ -442,14 +536,166 @@ const getTrendingHashtags = asyncHandler(async (req, res) => {
     .json(new ApiResponce(200, trends, "Trending hashtags fetched successfully"));
 });
 
+// Record user telemetry (view, dwell, click, profile_visit, search)
+const recordUserInteraction = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { type, postId, authorId, hashtags = [], dwellTimeMs = 0 } = req.body;
+
+  if (!type) {
+    throw new ApiError(400, "Interaction type is required");
+  }
+
+  const weightMap = {
+    view: 1.0,
+    dwell: 4.0,
+    click: 8.0,
+    profile_visit: 5.0,
+    search: 6.0,
+    dismiss: -30.0,
+  };
+
+  const weight = weightMap[type] || 1.0;
+
+  await UserInteraction.create({
+    user: userId,
+    post: postId || null,
+    author: authorId || null,
+    type,
+    hashtags: Array.isArray(hashtags) ? hashtags : [],
+    dwellTimeMs: Number(dwellTimeMs) || 0,
+    weight,
+  });
+
+  return res.status(200).json(new ApiResponce(200, { success: true }, "Interaction logged"));
+});
+
+// "Not interested in this post" dismiss action (trains negative signal)
+const dismissPost = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { postId } = req.params;
+
+  const post = await Post.findById(postId).select("hashtags user");
+
+  await UserInteraction.create({
+    user: userId,
+    post: postId,
+    author: post?.user || null,
+    type: "dismiss",
+    hashtags: post?.hashtags || [],
+    weight: -30.0,
+  });
+
+  return res.status(200).json(
+    new ApiResponce(200, { postId, dismissed: true }, "Post dismissed from recommendations")
+  );
+});
+
+// Get user recommendation affinity profile with SimClusters & negative telemetry
+const getUserAffinityProfile = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const interactions = await UserInteraction.find({
+    user: userId,
+    createdAt: { $gte: thirtyDaysAgo },
+  }).limit(400);
+
+  const tagScores = {};
+  for (const item of interactions) {
+    if (Array.isArray(item.hashtags)) {
+      for (const t of item.hashtags) {
+        const clean = t.toLowerCase().trim();
+        tagScores[clean] = (tagScores[clean] || 0) + (item.weight || 1);
+      }
+    }
+  }
+
+  const sortedTags = Object.entries(tagScores).sort((a, b) => b[1] - a[1]);
+  const positiveTags = sortedTags.filter(([_, score]) => score > 0).slice(0, 10);
+  const mutedTags = sortedTags.filter(([_, score]) => score < 0).slice(0, 10);
+
+  // Match active SimClusters based on user's tag affinity
+  const activeClusters = SIM_CLUSTERS.map((cluster) => {
+    let score = 0;
+    for (const tag of cluster.tags) {
+      score += tagScores[tag] || 0;
+    }
+    return {
+      id: cluster.id,
+      label: cluster.label,
+      icon: cluster.icon,
+      score: Math.round(score * 10) / 10,
+    };
+  })
+    .filter((c) => c.score !== 0)
+    .sort((a, b) => b.score - a.score);
+
+  return res.status(200).json(
+    new ApiResponce(
+      200,
+      {
+        topPositiveTags: positiveTags,
+        mutedTags,
+        activeClusters,
+        totalSignals: interactions.length,
+      },
+      "Affinity profile fetched"
+    )
+  );
+});
+
+// Tune topic interest manually (e.g. Boost +25 or Mute -50)
+const tuneTopicAffinity = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { tag, delta = 20 } = req.body;
+
+  if (!tag) {
+    throw new ApiError(400, "Hashtag is required");
+  }
+
+  const cleanTag = tag.startsWith("#") ? tag.toLowerCase() : `#${tag.toLowerCase()}`;
+
+  await UserInteraction.create({
+    user: userId,
+    type: delta > 0 ? "like" : "dismiss",
+    hashtags: [cleanTag],
+    weight: Number(delta) || 20.0,
+  });
+
+  return res.status(200).json(
+    new ApiResponce(
+      200,
+      { tag: cleanTag, delta },
+      delta > 0 ? `Topic ${cleanTag} boosted` : `Topic ${cleanTag} muted`
+    )
+  );
+});
+
+// Reset user's recommendation profile back to clean slate
+const resetAlgorithmProfile = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  await UserInteraction.deleteMany({ user: userId });
+
+  return res.status(200).json(
+    new ApiResponce(200, { success: true }, "Recommendation algorithm profile reset to default")
+  );
+});
+
 export {
   createPost,
   getPosts,
   PostLikeHandler,
   getSinglePost,
   deletePost,
+  updatePost,
   fetchingPostsByUserId,
   toggleBookmark,
   getBookmarks,
   getTrendingHashtags,
+  recordUserInteraction,
+  dismissPost,
+  getUserAffinityProfile,
+  tuneTopicAffinity,
+  resetAlgorithmProfile,
 };

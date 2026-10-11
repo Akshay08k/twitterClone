@@ -2,9 +2,14 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "simulate": "node simulator/engine.js",
+    "simulate:seed": "node simulator/engine.js --seed 15",
+    "simulate:quick": "node simulator/engine.js --seed 25",
+    "simulate:fast": "node simulator/engine.js --fast"
   },
   "dependencies": {
+    "@google/genai": "^2.28.0",
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
@@ -15,8 +20,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.3",
     "multer": "^1.4.5-lts.1",
+    "nodemon": "3.1.10",
     "socket.io": "^4.8.1",
-    "nodemon": "3.1.10"
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
     "nodemon": "3.1.10"
