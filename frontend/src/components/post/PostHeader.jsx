@@ -25,23 +25,21 @@ const formatRelativeTime = (dateString) => {
 const PostHeader = ({ user, createdAt }) => {
   return (
     <div className="flex items-center text-sm leading-5 space-x-1.5 min-w-0">
-      <Link
-        to={`/profile/${user?.username}`}
-        onClick={(e) => e.stopPropagation()}
-        className="font-bold text-white hover:underline flex items-center space-x-0.5 truncate"
-      >
+      <span className="font-bold text-white flex items-center space-x-0.5 truncate">
         <span>{user?.username || "User"}</span>
-        {user?.isVerified && (
-          <BadgeCheck className="w-4 h-4 text-[#1d9bf0] fill-current shrink-0 ml-0.5" />
+        {(user?.isVerified || user?.isPremium) && (
+          <BadgeCheck
+            className={`w-4 h-4 fill-current shrink-0 ml-0.5 ${
+              user?.verifiedBadgeType === "gold" || user?.premiumTier === "premium_plus"
+                ? "text-[#e2b714]"
+                : "text-[#1d9bf0]"
+            }`}
+          />
         )}
-      </Link>
-      <Link
-        to={`/profile/${user?.username}`}
-        onClick={(e) => e.stopPropagation()}
-        className="text-gray-500 hover:text-gray-400 truncate"
-      >
+      </span>
+      <span className="text-gray-500 truncate">
         @{user?.userHandle?.toLowerCase() || user?.username?.toLowerCase()}
-      </Link>
+      </span>
       <span className="text-gray-500">·</span>
       <span className="text-gray-500 shrink-0 text-xs">
         {formatRelativeTime(createdAt)}

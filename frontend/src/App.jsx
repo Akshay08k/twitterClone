@@ -25,12 +25,16 @@ import Settings from "./components/Settings/SettingsPage";
 import NotificationPage from "./components/Notification/Notification";
 import MessagingPage from "./components/Messages/Message";
 import BookmarksPage from "./components/Bookmarks/BookmarksPage";
+import PremiumPage from "./components/Premium/PremiumPage";
+
+import ScrollToTop from "./components/ScrollToTop";
 
 const App = () => {
   return (
     <Provider store={store}>
       <AuthProvider>
         <Router>
+          <ScrollToTop />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -45,6 +49,7 @@ const App = () => {
               <Route path="logout" element={<Logout />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<NotificationPage />} />
+              <Route path="/premium" element={<PremiumPage />} />
               <Route path="/profile/:username" element={<ProfileVisiting />} />
               <Route path="*" element={<NotFound />} />
             </Route>

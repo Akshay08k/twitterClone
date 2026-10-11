@@ -3,12 +3,15 @@ import axios from "../contexts/axios";
 import usePostSocketSync from "../utils/usePostSync.js";
 import Posts from "./Posts";
 import { useSelector } from "react-redux";
-import { Image, Smile, Sparkles, X } from "lucide-react";
+import { Image, Smile, Sparkles, X, ArrowUp, RotateCw } from "lucide-react";
 import toast from "react-hot-toast";
 
 const PostList = () => {
   const [feedType, setFeedType] = useState("for-you"); // "for-you" | "following"
   const [posts, setPosts] = useState([]);
+  const [queuedPosts, setQueuedPosts] = useState([]);
+  const [newlyRevealedIds, setNewlyRevealedIds] = useState(new Set());
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // In-feed compose state
@@ -23,6 +26,7 @@ const PostList = () => {
 
   const fetchPosts = async () => {
     setLoading(true);
+    setQueuedPosts([]);
     try {
       const url = feedType === "following" ? "/posts?type=following" : "/posts";
       const response = await axios.get(url);
@@ -40,16 +44,64 @@ const PostList = () => {
     fetchPosts();
   }, [feedType]);
 
+  // Reveal queued posts with smooth animation & scroll
+  const handleRevealNewPosts = () => {
+    if (queuedPosts.length === 0) return;
+
+    const newIds = new Set(queuedPosts.map((p) => p._id));
+    setNewlyRevealedIds(newIds);
+
+    setPosts((prev) => {
+      const existingIds = new Set(prev.map((p) => p._id));
+      const toAdd = queuedPosts.filter((p) => !existingIds.has(p._id));
+      return [...toAdd, ...prev];
+    });
+
+    setQueuedPosts([]);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    setTimeout(() => {
+      setNewlyRevealedIds(new Set());
+    }, 2500);
+  };
+
+  // Manual feed reload
+  const handleRefreshFeed = async () => {
+    setIsRefreshing(true);
+    if (queuedPosts.length > 0) {
+      handleRevealNewPosts();
+    } else {
+      await fetchPosts();
+    }
+    setTimeout(() => setIsRefreshing(false), 600);
+  };
+
   usePostSocketSync({
     onNewPost: (newPost) => {
-      // Add new post to top of feed if on for-you tab or post is relevant
-      setPosts((prev) => {
+      // If authored by the current logged-in user, show immediately
+      const isOwnPost =
+        reduxUser?._id &&
+        newPost.user?._id &&
+        newPost.user._id.toString() === reduxUser._id.toString();
+
+      if (isOwnPost) {
+        setPosts((prev) => {
+          if (prev.some((p) => p._id === newPost._id)) return prev;
+          return [newPost, ...prev];
+        });
+        setNewlyRevealedIds((prev) => new Set([...prev, newPost._id]));
+        return;
+      }
+
+      // Someone else posted! Queue it to avoid disrupting current reading position
+      setQueuedPosts((prev) => {
         if (prev.some((p) => p._id === newPost._id)) return prev;
         return [newPost, ...prev];
       });
     },
     onPostDeleted: (deletedPostId) => {
       setPosts((prev) => prev.filter((post) => post._id !== deletedPostId));
+      setQueuedPosts((prev) => prev.filter((post) => post._id !== deletedPostId));
     },
   });
 
@@ -89,6 +141,7 @@ const PostList = () => {
         // Socket will also broadcast, but we can prepend immediately if needed
         const createdPost = response.data.data;
         if (createdPost) {
+          setNewlyRevealedIds((prev) => new Set([...prev, createdPost._id]));
           setPosts((prev) => {
             if (prev.some((p) => p._id === createdPost._id)) return prev;
             return [createdPost, ...prev];
@@ -110,9 +163,12 @@ const PostList = () => {
     <div className="w-full min-h-screen">
       {/* Sticky Tab Header */}
       <div className="sticky top-0 z-20 backdrop-blur-md bg-black/85 border-b border-[#24272c]">
-        <div className="flex">
+        <div className="flex items-center">
           <button
-            onClick={() => setFeedType("for-you")}
+            onClick={() => {
+              if (feedType === "for-you") handleRefreshFeed();
+              else setFeedType("for-you");
+            }}
             className="flex-1 py-3.5 text-center font-bold text-sm hover:bg-white/[0.03] transition-colors relative"
           >
             <span className={feedType === "for-you" ? "text-white" : "text-gray-500"}>
@@ -124,7 +180,10 @@ const PostList = () => {
           </button>
 
           <button
-            onClick={() => setFeedType("following")}
+            onClick={() => {
+              if (feedType === "following") handleRefreshFeed();
+              else setFeedType("following");
+            }}
             className="flex-1 py-3.5 text-center font-bold text-sm hover:bg-white/[0.03] transition-colors relative"
           >
             <span className={feedType === "following" ? "text-white" : "text-gray-500"}>
@@ -133,6 +192,16 @@ const PostList = () => {
             {feedType === "following" && (
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-[#1d9bf0] rounded-full" />
             )}
+          </button>
+
+          {/* Quick Refresh Icon */}
+          <button
+            onClick={handleRefreshFeed}
+            disabled={isRefreshing}
+            className="px-3.5 py-3 text-gray-500 hover:text-[#1d9bf0] hover:bg-white/[0.05] transition-all rounded-full mr-1 disabled:opacity-50"
+            title="Refresh feed"
+          >
+            <RotateCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#1d9bf0]" : ""}`} />
           </button>
         </div>
       </div>
@@ -266,6 +335,33 @@ const PostList = () => {
         </div>
       </div>
 
+      {/* Floating "Show New Posts" Twitter/X-style Pill Indicator */}
+      {queuedPosts.length > 0 && (
+        <div className="sticky top-14 z-30 flex justify-center py-2.5 pointer-events-none">
+          <button
+            onClick={handleRevealNewPosts}
+            className="pointer-events-auto group flex items-center gap-2.5 px-4 py-2 bg-[#1d9bf0] hover:bg-[#1a8cd8] active:scale-95 text-white font-semibold text-sm rounded-full shadow-lg shadow-[#1d9bf0]/35 transition-all duration-200 cursor-pointer backdrop-blur-md animate-pillPop animate-pulseGlow border border-white/10"
+          >
+            <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
+            <span>
+              {queuedPosts.length === 1
+                ? "Show 1 new post"
+                : `Show ${queuedPosts.length} new posts`}
+            </span>
+            <div className="flex -space-x-1.5 ml-1">
+              {queuedPosts.slice(0, 3).map((p) => (
+                <img
+                  key={p._id}
+                  src={p.user?.avatar || "/default-avatar.png"}
+                  alt={p.user?.username || "Avatar"}
+                  className="w-5 h-5 rounded-full border border-black object-cover"
+                />
+              ))}
+            </div>
+          </button>
+        </div>
+      )}
+
       {/* Feed List */}
       {loading ? (
         <div className="flex justify-center items-center py-20">
@@ -290,6 +386,7 @@ const PostList = () => {
               key={post._id}
               post={post}
               currentUser={reduxUser}
+              isNew={newlyRevealedIds.has(post._id)}
               onPostDeleted={(id) => setPosts((prev) => prev.filter((p) => p._id !== id))}
             />
           ))}

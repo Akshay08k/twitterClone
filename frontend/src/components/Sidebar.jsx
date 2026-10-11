@@ -32,6 +32,7 @@ const Sidebar = () => {
     { name: "Notifications", path: "/notifications", icon: Bell },
     { name: "Messages", path: "/messages", icon: Mail },
     { name: "Bookmarks", path: "/bookmarks", icon: Bookmark },
+    { name: "Premium", path: "/premium", icon: Sparkles },
     { name: "Profile", path: "/profile", icon: User },
     { name: "Settings", path: "/settings", icon: Settings },
   ];

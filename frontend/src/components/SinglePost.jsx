@@ -26,6 +26,7 @@ const SinglePost = () => {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     fetchPost();
   }, [id]);
 
@@ -66,6 +67,7 @@ const SinglePost = () => {
             currentUser={reduxUser}
             onCommentUpdate={fetchPost}
             onPostDeleted={() => navigate("/")}
+            defaultShowComments={true}
           />
         </div>
       )}

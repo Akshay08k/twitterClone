@@ -111,6 +111,60 @@ body {
   animation: collapseItem 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+@keyframes slideDownFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px);
+    background-color: rgba(29, 155, 240, 0.12);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+    background-color: rgba(29, 155, 240, 0.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    background-color: transparent;
+  }
+}
+
+.animate-slideDownFade {
+  animation: slideDownFade 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pillPop {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-pillPop {
+  animation: pillPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 4px 18px rgba(29, 155, 240, 0.35);
+  }
+  50% {
+    box-shadow: 0 6px 26px rgba(29, 155, 240, 0.65);
+  }
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
 .glow-btn {
   transition: all 0.2s ease-in-out;
 }
